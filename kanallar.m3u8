@@ -5,23 +5,23 @@
 #EXT-X-REFERER:https://taraftarium1080.xyz
 #EXT-X-ORIGIN:https://taraftarium1080.xyz
 
-#EXTINF:-1 tvg-name="BeIN Sports 1" group-title="BeinSports",BeIN Sports 1
+#EXTINF:-1 tvg-name="BeIN Sports 1" tvg-logo="https://resmim.net/cdn/2026/07/22/ETtrXH.png" group-title="BeinSports",BeIN Sports 1
 https://2i4.d72577a9dd0ec71.cfd/patron/mono.m3u8
-#EXTINF:-1 tvg-name="BeIN Sports 2" group-title="BeinSports",BeIN Sports 2
+#EXTINF:-1 tvg-name="BeIN Sports 2" tvg-logo="https://resmim.net/cdn/2026/07/22/ETtrXH.png" group-title="BeinSports",BeIN Sports 2
 https://2i4.d72577a9dd0ec71.cfd/b2/mono.m3u8
-#EXTINF:-1 tvg-name="BeIN Sports 3" group-title="BeinSports",BeIN Sports 3
+#EXTINF:-1 tvg-name="BeIN Sports 3" tvg-logo="https://resmim.net/cdn/2026/07/22/ETtrXH.png" group-title="BeinSports",BeIN Sports 3
 https://2i4.d72577a9dd0ec71.cfd/b3/mono.m3u8
-#EXTINF:-1 tvg-name="BeIN Sports 4" group-title="BeinSports",BeIN Sports 4
+#EXTINF:-1 tvg-name="BeIN Sports 4" tvg-logo="https://resmim.net/cdn/2026/07/22/ETtrXH.png" group-title="BeinSports",BeIN Sports 4
 https://2i4.d72577a9dd0ec71.cfd/b4/mono.m3u8
-#EXTINF:-1 tvg-name="BeIN Sports 5" group-title="BeinSports",BeIN Sports 5
+#EXTINF:-1 tvg-name="BeIN Sports 5" tvg-logo="https://resmim.net/cdn/2026/07/22/ETtrXH.png" group-title="BeinSports",BeIN Sports 5
 https://2i4.d72577a9dd0ec71.cfd/b5/mono.m3u8
-#EXTINF:-1 tvg-name="BeIN Sports 1 Max" group-title="BeinSports",BeIN Sports 1 Max
+#EXTINF:-1 tvg-name="BeIN Sports 1 Max" tvg-logo="https://resmim.net/cdn/2026/07/22/ETtrXH.png" group-title="BeinSports",BeIN Sports 1 Max
 https://2i4.d72577a9dd0ec71.cfd/bm1/mono.m3u8
-#EXTINF:-1 tvg-name="BeIN Sports 2 Max" group-title="BeinSports",BeIN Sports 2 Max
+#EXTINF:-1 tvg-name="BeIN Sports 2 Max" tvg-logo="https://resmim.net/cdn/2026/07/22/ETtrXH.png" group-title="BeinSports",BeIN Sports 2 Max
 https://2i4.d72577a9dd0ec71.cfd/bm2/mono.m3u8
-#EXTINF:-1 tvg-name="S Sport 1" group-title="S Sports",S Sport 1
+#EXTINF:-1 tvg-name="S Sports 1" tvg-logo="https://resmim.net/cdn/2026/07/22/ETtrXH.png" group-title="S Sports",S Sports 1
 https://2i4.d72577a9dd0ec71.cfd/ss/mono.m3u8
-#EXTINF:-1 tvg-name="S Sport 2" group-title="S Sports",S Sport 2
+#EXTINF:-1 tvg-name="BeIN Sports 1" tvg-logo="https://resmim.net/cdn/2026/07/22/ETtrXH.png" group-title="BeinSports",BeIN Sports 1
 https://2i4.d72577a9dd0ec71.cfd/ss2/mono.m3u8
 #EXTINF:-1 tvg-name="Tivibu Sports 1" group-title="Tivibu",Tivibu Sports 1
 https://2i4.d72577a9dd0ec71.cfd/t1/mono.m3u8
