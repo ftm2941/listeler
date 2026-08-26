@@ -1,15 +1,16 @@
 import re
 import urllib.request
 
+# Ana web sitesi ve yazılacak m3u8 dosyası
 TARGET_URL = "https://taraftarium1081.xyz"
 OUTPUT_FILE = "kanallar.m3u8"
 
 HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36',
-    'Referer': 'https://taraftarium1081.xyz/'
+    'Referer': f'{TARGET_URL}/'
 }
 
-# Şablon yapınız (Kanal isimleri, logoları ve path eşleşmeleri)
+# Kanal listeniz, logolarınız ve özel grup isimleriniz
 CHANNELS = [
     {"name": "BeIN Sports 1", "logo": "https://resmim.net/cdn/2026/07/22/ETtrXH.png", "group": "BeinSports", "path": "patron/mono.m3u8"},
     {"name": "BeIN Sports 2", "logo": "https://resmim.net/cdn/2026/07/22/ETtrXH.png", "group": "BeinSports", "path": "b2/mono.m3u8"},
@@ -42,32 +43,31 @@ def fetch_stream_base():
         with urllib.request.urlopen(req, timeout=15) as response:
             html = response.read().decode('utf-8')
         
-        # Siteden dinamik yayın domainini bulma (ör: https://2i4.d72577a9dd0ec71.cfd)
+        # Siteden dinamik domain adresini yakalama (örneğin: https://2i4.d72577a9dd0ec71.cfd)
         match = re.search(r'https?://[a-zA-Z0-9\.\-]+\.cfd', html)
         if match:
             return match.group(0)
         
-        # Eşleşme bulunamazsa varsayılan aktif yayın sunucusunu kullan
         return "https://2i4.d72577a9dd0ec71.cfd"
     except Exception as e:
-        print(f"Domain çekme hatası: {e}")
+        print(f"Domain yakalama hatası: {e}")
         return "https://2i4.d72577a9dd0ec71.cfd"
 
 def build_m3u():
     base_url = fetch_stream_base()
     
-    # Sabit M3U Başlıkları
+    # Tam M3U Header Yapınız
     m3u_lines = [
         "#EXTM3U",
         "#EXTVLCOPT:http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36",
-        f"#EXTVLCOPT:http-referrer={TARGET_URL}",
+        "#EXTVLCOPT:http-referrer=https://taraftarium1077.xyz",
         "#EXT-X-USER-AGENT:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36",
         f"#EXT-X-REFERER:{TARGET_URL}",
         f"#EXT-X-ORIGIN:{TARGET_URL}",
         ""
     ]
 
-    # Kanalları şablon yapınıza göre dizme
+    # Kanalları şablonunuzdaki sırayla ekleme
     for ch in CHANNELS:
         logo_str = f' tvg-logo="{ch["logo"]}"' if ch["logo"] else ""
         extinf = f'#EXTINF:-1 tvg-name="{ch["name"]}"{logo_str} group-title="{ch["group"]}",{ch["name"]}'
@@ -76,7 +76,7 @@ def build_m3u():
         m3u_lines.append(extinf)
         m3u_lines.append(stream_link)
 
-    # Dosyaya yazma
+    # kanallar.m3u8 dosyasına kaydetme
     with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
         f.write("\n".join(m3u_lines) + "\n")
         
