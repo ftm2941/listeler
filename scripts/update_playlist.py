@@ -11,13 +11,15 @@ scraper = cloudscraper.create_scraper(
     }
 )
 
+# İzlemek istediğiniz kanalların adlarını ve ID'lerini buraya ekleyin
 CHANNELS = [
     {"name": "Kanal D", "id": "3828793616b62b9cc5834c"},
-    # Diğer kanalların ID'lerini ekleyebilirsiniz
+    # Örnek ilave kanal:
+    # {"name": "Star TV", "id": "DIĞER_KANAL_ID"},
 ]
 
 def get_vavoo_auth_token():
-    """Vavoo / Lokke sunucusundan geçerli erişim imzasını (auth token) alır."""
+    """Vavoo sunucusundan oturum imzası (auth token) alır."""
     auth_url = "https://www.lokke.app/api/app/ping"
     payload = {
         "token": "ldCvE092e7gER0rVIajfsXIvRhwlrAzP6_1oEJ4q6HH89QHt24v6NNL_jQJO219hiLOXF2hqEfsUuEWitEIGN4EaHHEHb7Cd7gojc5SQYRFzU3XWo_kMeryAUbcwWnQrnf0-",
@@ -51,13 +53,12 @@ def get_vavoo_auth_token():
     return None
 
 def get_stream_url(live_id, signature):
-    """Token ile birlikte m3u8 akışını doğrular."""
+    """Token ile canlı stream linkini çözer."""
     headers = {
         "User-Agent": "VAVOO/2.6",
         "Accept": "*/*"
     }
     
-    # Imza varsa header ve URL parametresi olarak ekliyoruz
     if signature:
         headers["mediahubmx-signature"] = signature
 
@@ -71,9 +72,8 @@ def get_stream_url(live_id, signature):
     for url in urls_to_try:
         try:
             res = scraper.get(url, headers=headers, allow_redirects=True, timeout=10)
-            print(f"[*] Deneniyor ({url[:45]}...): Status {res.status_code}")
+            print(f"[*] Deneniyor: Status {res.status_code}")
             
-            # Eğer Not found / 404 / 403 vermiyorsa geçerli yayın linkini bulduk demektir
             if res.status_code == 200 and "Not found" not in res.text:
                 return res.url
         except Exception as e:
