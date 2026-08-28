@@ -1,12 +1,13 @@
+import sys
 import re
 import requests
 from playwright.sync_api import sync_playwright
 
-# Başlangıç domain mantığı
+# Başlangıç domain mantığı (Adres engellendikçe sayaç otomatik artar)
 BASE_DOMAIN_PREFIX = "https://taraftarium"
 BASE_DOMAIN_SUFFIX = ".xyz"
 
-# Aranacak sayaç aralığı (En son bilinen adresten ileriye doğru dener)
+# Aranacak sayaç aralığı (En son bilinen adresten ileriye doğru sıralı dener)
 START_INDEX = 1081
 MAX_TRY_COUNT = 30  # Gelecekte 1082, 1083, 1084... değiştikçe otomatik bulur
 
@@ -68,8 +69,9 @@ def get_active_taraftarium_url():
         try:
             res = requests.get(test_url, headers=headers, timeout=5, allow_redirects=True)
             if res.status_code == 200:
-                print(f"[+] Aktif Taraftarium Adresi Bulundu: {res.url.rstrip('/')}")
-                return res.url.rstrip('/')
+                final_url = res.url.rstrip('/')
+                print(f"[+] Aktif Taraftarium Adresi Bulundu: {final_url}")
+                return final_url
         except Exception:
             continue
     return f"{BASE_DOMAIN_PREFIX}{START_INDEX}{BASE_DOMAIN_SUFFIX}"
