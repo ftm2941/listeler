@@ -1,8 +1,7 @@
 import re
 import urllib.request
 
-# Güncel Taraftarium Adresi
-TARGET_URL = "https://taraftarium1081.xyz"
+TARGET_URL = "https://taraftarium24.ch"
 OUTPUT_FILE = "kanallar.m3u8"
 
 HEADERS = {
@@ -10,10 +9,8 @@ HEADERS = {
     'Referer': f'{TARGET_URL}/'
 }
 
-# BeIN Sports logosu
 BEIN_LOGO = "https://resmim.net/cdn/2026/07/22/ETtrXH.png"
 
-# Taraftarium Kanal Yolları (Path)
 CHANNELS = [
     # BeinSports
     {"name": "BeIN Sports 1", "logo": BEIN_LOGO, "group": "BeinSports", "path": "patron/mono.m3u8"},
@@ -60,39 +57,46 @@ CHANNELS = [
 ]
 
 def fetch_stream_base():
-    """Site kaynak kodundan yayın CDN domainini otomatik tespit eder."""
+    """Taraftarium24.ch içerisindeki gizli iframe player kaynağına girip gerçek m3u8 sunucusunu bulur."""
     try:
+        # 1. Ana sayfayı çek
         req = urllib.request.Request(TARGET_URL, headers=HEADERS)
         with urllib.request.urlopen(req, timeout=15) as response:
             html = response.read().decode('utf-8', errors='ignore')
         
-        # 1. Sitedeki aktif yayın sunucusunu (cfd/xyz/site vb.) bul
-        matches = re.findall(r'https?://[a-zA-Z0-9\.\-]+\.(?:cfd|xyz|site|online|me|top|link)', html)
-        for m in matches:
-            if TARGET_URL not in m and "google" not in m and "yandex" not in m:
-                return m.rstrip('/')
+        # 2. Player iframe linkini yakala
+        iframe_srcs = re.findall(r'iframe[^\">]+src=["\']([^"\']+)["\']', html, re.IGNORECASE)
         
-        # 2. Player iframe kaynaklarında ara
-        iframes = re.findall(r'src=["\'](https?://[^"\']+)["\']', html)
-        for iframe_url in iframes:
-            try:
-                iframe_req = urllib.request.Request(iframe_url, headers=HEADERS)
-                with urllib.request.urlopen(iframe_req, timeout=8) as iframe_res:
-                    iframe_html = iframe_res.read().decode('utf-8', errors='ignore')
-                    stream_match = re.search(r'https?://[a-zA-Z0-9\.\-]+\.(?:cfd|xyz|site|online)', iframe_html)
-                    if stream_match:
-                        return stream_match.group(0).rstrip('/')
-            except Exception:
-                continue
+        target_iframe = None
+        for src in iframe_srcs:
+            if "player" in src or "embed" in src or "stream" in src:
+                target_iframe = src if src.startswith("http") else f"{TARGET_URL.rstrip('/')}/{src.lstrip('/')}"
+                break
+        
+        if target_iframe:
+            iframe_req = urllib.request.Request(target_iframe, headers=HEADERS)
+            with urllib.request.urlopen(iframe_req, timeout=10) as iframe_res:
+                iframe_html = iframe_res.read().decode('utf-8', errors='ignore')
+                
+                # Iframe içerisindeki gerçek CDN/Stream domainini ara (.cfd, .xyz, .site, .m3u8 adresi önü)
+                stream_match = re.search(r'(https?://[a-zA-Z0-9\.\-]+\.(?:cfd|xyz|site|online|me|top|link))', iframe_html)
+                if stream_match and TARGET_URL not in stream_match.group(1):
+                    return stream_match.group(1).rstrip('/')
 
+        # 3. Iframe bulunamazsa doğrudan HTML içindeki m3u8 sunucularını dene
+        m3u8_matches = re.findall(r'(https?://[a-zA-Z0-9\.\-]+\.(?:cfd|xyz|site|online|me|top|link))/[^\s"\'<>]+mono\.m3u8', html)
+        if m3u8_matches:
+            return m3u8_matches[0].rstrip('/')
+
+        # Doğrudan ana domain üzerinden dene
         return TARGET_URL
     except Exception as e:
-        print(f"Stream adresi çekilirken hata oluştu: {e}")
+        print(f"Hata oluştu, varsayılan adrese düşülüyor: {e}")
         return TARGET_URL
 
 def build_m3u():
     base_url = fetch_stream_base()
-    print(f"Tespit edilen Canlı Yayın CDN Adresi: {base_url}")
+    print(f"Bulunan Gerçek Canlı Yayın CDN Adresi: {base_url}")
     
     m3u_lines = [
         "#EXTM3U",
