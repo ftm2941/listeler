@@ -6,7 +6,8 @@ OUTPUT_FILE = "kanallar.m3u8"
 
 HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36',
-    'Referer': f'{TARGET_URL}/'
+    'Referer': f'{TARGET_URL}/',
+    'Accept-Language': 'tr-TR,tr;q=0.9,en-US;q=0.8,en;q=0.7'
 }
 
 BEIN_LOGO = "https://resmim.net/cdn/2026/07/22/ETtrXH.png"
@@ -57,46 +58,45 @@ CHANNELS = [
 ]
 
 def fetch_stream_base():
-    """Taraftarium24.ch içerisindeki gizli iframe player kaynağına girip gerçek m3u8 sunucusunu bulur."""
     try:
-        # 1. Ana sayfayı çek
         req = urllib.request.Request(TARGET_URL, headers=HEADERS)
         with urllib.request.urlopen(req, timeout=15) as response:
             html = response.read().decode('utf-8', errors='ignore')
-        
-        # 2. Player iframe linkini yakala
-        iframe_srcs = re.findall(r'iframe[^\">]+src=["\']([^"\']+)["\']', html, re.IGNORECASE)
-        
-        target_iframe = None
-        for src in iframe_srcs:
-            if "player" in src or "embed" in src or "stream" in src:
-                target_iframe = src if src.startswith("http") else f"{TARGET_URL.rstrip('/')}/{src.lstrip('/')}"
-                break
-        
-        if target_iframe:
-            iframe_req = urllib.request.Request(target_iframe, headers=HEADERS)
-            with urllib.request.urlopen(iframe_req, timeout=10) as iframe_res:
-                iframe_html = iframe_res.read().decode('utf-8', errors='ignore')
-                
-                # Iframe içerisindeki gerçek CDN/Stream domainini ara (.cfd, .xyz, .site, .m3u8 adresi önü)
-                stream_match = re.search(r'(https?://[a-zA-Z0-9\.\-]+\.(?:cfd|xyz|site|online|me|top|link))', iframe_html)
-                if stream_match and TARGET_URL not in stream_match.group(1):
-                    return stream_match.group(1).rstrip('/')
 
-        # 3. Iframe bulunamazsa doğrudan HTML içindeki m3u8 sunucularını dene
-        m3u8_matches = re.findall(r'(https?://[a-zA-Z0-9\.\-]+\.(?:cfd|xyz|site|online|me|top|link))/[^\s"\'<>]+mono\.m3u8', html)
-        if m3u8_matches:
-            return m3u8_matches[0].rstrip('/')
+        # JS dosyalarını veya player kaynaklarını bul
+        js_files = re.findall(r'src=["\']([^"\']+\.js(?:\?[^"\']*)?)["\']', html)
+        iframes = re.findall(r'src=["\']([^"\']+)["\']', html)
 
-        # Doğrudan ana domain üzerinden dene
+        all_sources = js_files + iframes
+        for src in all_sources:
+            full_url = src if src.startswith("http") else f"{TARGET_URL.rstrip('/')}/{src.lstrip('/')}"
+            try:
+                sub_req = urllib.request.Request(full_url, headers=HEADERS)
+                with urllib.request.urlopen(sub_req, timeout=8) as sub_res:
+                    sub_content = sub_res.read().decode('utf-8', errors='ignore')
+                    
+                    # CDN Domain kalıpları (örneğin: https://xxx.cfd veya https://xxx.xyz)
+                    found = re.findall(r'https?://[a-zA-Z0-9\.\-]+\.(?:cfd|xyz|online|site|tech|cloud)', sub_content)
+                    for f_domain in found:
+                        if TARGET_URL not in f_domain and "google" not in f_domain and "yandex" not in f_domain:
+                            return f_domain.rstrip('/')
+            except Exception:
+                continue
+
+        # Ana sayfada doğrudan regex ara
+        direct_matches = re.findall(r'https?://[a-zA-Z0-9\.\-]+\.(?:cfd|xyz|online|site|tech|cloud)', html)
+        for d in direct_matches:
+            if TARGET_URL not in d and "google" not in d and "yandex" not in d:
+                return d.rstrip('/')
+
         return TARGET_URL
     except Exception as e:
-        print(f"Hata oluştu, varsayılan adrese düşülüyor: {e}")
+        print(f"Hata: {e}")
         return TARGET_URL
 
 def build_m3u():
     base_url = fetch_stream_base()
-    print(f"Bulunan Gerçek Canlı Yayın CDN Adresi: {base_url}")
+    print(f"[+] Tespit edilen CDN Adresi: {base_url}")
     
     m3u_lines = [
         "#EXTM3U",
@@ -119,7 +119,7 @@ def build_m3u():
     with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
         f.write("\n".join(m3u_lines) + "\n")
         
-    print(f"{OUTPUT_FILE} başarıyla güncellendi.")
+    print(f"[+] {OUTPUT_FILE} güncellendi.")
 
 if __name__ == "__main__":
     build_m3u()
