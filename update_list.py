@@ -1,10 +1,16 @@
-import sys
 import re
+import requests
 from playwright.sync_api import sync_playwright
 
-TARGET_URL = "https://taraftarium24.ch"
-OUTPUT_FILE = "kanallar.m3u8"
+# Başlangıç domain mantığı
+BASE_DOMAIN_PREFIX = "https://taraftarium"
+BASE_DOMAIN_SUFFIX = ".xyz"
 
+# Aranacak sayaç aralığı (En son bilinen adresten ileriye doğru dener)
+START_INDEX = 1081
+MAX_TRY_COUNT = 30  # Gelecekte 1082, 1083, 1084... değiştikçe otomatik bulur
+
+OUTPUT_FILE = "kanallar.m3u8"
 BEIN_LOGO = "https://resmim.net/cdn/2026/07/22/ETtrXH.png"
 
 CHANNELS = [
@@ -52,7 +58,24 @@ CHANNELS = [
     {"name": "TJK TV", "logo": "", "group": "Yarış", "path": "tjktv/mono.m3u8"},
 ]
 
-def find_stream_cdn():
+def get_active_taraftarium_url():
+    """Sırayla taraftarium1081.xyz, taraftarium1082.xyz ... adreslerini kontrol ederek ilk aktif olanı bulur."""
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36'
+    }
+    for i in range(START_INDEX, START_INDEX + MAX_TRY_COUNT):
+        test_url = f"{BASE_DOMAIN_PREFIX}{i}{BASE_DOMAIN_SUFFIX}"
+        try:
+            res = requests.get(test_url, headers=headers, timeout=5, allow_redirects=True)
+            if res.status_code == 200:
+                print(f"[+] Aktif Taraftarium Adresi Bulundu: {res.url.rstrip('/')}")
+                return res.url.rstrip('/')
+        except Exception:
+            continue
+    return f"{BASE_DOMAIN_PREFIX}{START_INDEX}{BASE_DOMAIN_SUFFIX}"
+
+def extract_cdn_from_player(active_url):
+    """Bulunan aktif adrese Playwright ile bağlanıp arka plandaki yayın CDN adresini yakalar."""
     cdn_domain = None
 
     with sync_playwright() as p:
@@ -62,70 +85,68 @@ def find_stream_cdn():
         )
         page = context.new_page()
 
-        # Sayfadan geçen tüm HTTP isteklerini dinle
         def handle_request(request):
             nonlocal cdn_domain
             url = request.url
-            # Ağ trafiğinden geçen mono.m3u8 veya cfd/xyz uzantılı canlı akış isteklerini yakala
-            if "mono.m3u8" in url or re.search(r'https?://[a-zA-Z0-9\.\-]+\.(?:cfd|xyz|site|online)/', url):
-                match = re.search(r'(https?://[a-zA-Z0-9\.\-]+\.(?:cfd|xyz|site|online))', url)
-                if match:
+            # Akış yapan m3u8 veya sunucu domainlerini (cfd, xyz, online, site vb.) yakala
+            if "mono.m3u8" in url or "/patron/" in url or re.search(r'https?://[a-zA-Z0-9\.\-]+\.(?:cfd|xyz|online|site|tech|cloud|click)/', url):
+                match = re.search(r'(https?://[a-zA-Z0-9\.\-]+\.(?:cfd|xyz|online|site|tech|cloud|click))', url)
+                if match and "taraftarium" not in match.group(1):
                     cdn_domain = match.group(1)
 
         page.on("request", handle_request)
 
         try:
-            print(f"[+] {TARGET_URL} adresine bağlanılıyor...")
-            page.goto(TARGET_URL, wait_until="networkidle", timeout=25000)
-            
-            # Sayfa içinde iframe veya oynatıcı düğmesi varsa tıklama simülasyonu yap
+            print(f"[+] Playwright ile siteye giriş yapılıyor: {active_url}")
+            page.goto(active_url, wait_until="domcontentloaded", timeout=20000)
             page.wait_for_timeout(4000)
-            
-            # Çerçeve (iframe) kaynaklarını tara
+
+            # Çerçevelerdeki (iframe) adresleri tara
             for frame in page.frames:
                 frame_url = frame.url
-                match = re.search(r'(https?://[a-zA-Z0-9\.\-]+\.(?:cfd|xyz|site|online))', frame_url)
-                if match and not cdn_domain:
+                match = re.search(r'(https?://[a-zA-Z0-9\.\-]+\.(?:cfd|xyz|online|site|tech|cloud|click))', frame_url)
+                if match and "taraftarium" not in match.group(1):
                     cdn_domain = match.group(1)
-                    
+                    break
         except Exception as e:
-            print(f"[-] Hata oluştu: {e}")
+            print(f"[-] Playwright Hatası: {e}")
         finally:
             browser.close()
 
     return cdn_domain
 
 def build_m3u():
-    detected_cdn = find_stream_cdn()
-    
-    if not detected_cdn:
-        print("[!] Ağ dinlemesinde otomatik CDN bulunamadı. Varsayılan adres deneniyor...")
-        detected_cdn = TARGET_URL
-        
-    print(f"[✓] Bulunan Doğru CDN Adresi: {detected_cdn}")
+    active_main_url = get_active_taraftarium_url()
+    stream_cdn = extract_cdn_from_player(active_main_url)
+
+    if not stream_cdn:
+        print("[!] Özel CDN bulunamadı, ana domain kullanılıyor.")
+        stream_cdn = active_main_url
+
+    print(f"[✓] Tam Doğru Yayın Sunucusu: {stream_cdn}")
 
     m3u_lines = [
         "#EXTM3U",
         "#EXTVLCOPT:http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36",
-        f"#EXTVLCOPT:http-referrer={TARGET_URL}/",
+        f"#EXTVLCOPT:http-referrer={active_main_url}/",
         "#EXT-X-USER-AGENT:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36",
-        f"#EXT-X-REFERER:{TARGET_URL}/",
-        f"#EXT-X-ORIGIN:{TARGET_URL}",
+        f"#EXT-X-REFERER:{active_main_url}/",
+        f"#EXT-X-ORIGIN:{active_main_url}",
         ""
     ]
 
     for ch in CHANNELS:
         logo_str = f' tvg-logo="{ch["logo"]}"' if ch["logo"] else ' tvg-logo=""'
         extinf = f'#EXTINF:-1 tvg-name="{ch["name"]}"{logo_str} group-title="{ch["group"]}",{ch["name"]}'
-        stream_link = f"{detected_cdn.rstrip('/')}/{ch['path']}"
-        
+        stream_link = f"{stream_cdn.rstrip('/')}/{ch['path']}"
+
         m3u_lines.append(extinf)
         m3u_lines.append(stream_link)
 
     with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
         f.write("\n".join(m3u_lines) + "\n")
-        
-    print(f"[✓] {OUTPUT_FILE} başarıyla oluşturuldu.")
+
+    print(f"[✓] {OUTPUT_FILE} güncellendi.")
 
 if __name__ == "__main__":
     build_m3u()
