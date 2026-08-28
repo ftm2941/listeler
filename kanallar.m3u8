@@ -6,64 +6,64 @@
 #EXT-X-ORIGIN:https://taraftarium24.ch
 
 #EXTINF:-1 tvg-name="BeIN Sports 1" tvg-logo="https://resmim.net/cdn/2026/07/22/ETtrXH.png" group-title="BeinSports",BeIN Sports 1
-https://cdnjs.cloud/patron/mono.m3u8
+https://taraftarium24.ch/patron/mono.m3u8
 #EXTINF:-1 tvg-name="BeIN Sports 2" tvg-logo="https://resmim.net/cdn/2026/07/22/ETtrXH.png" group-title="BeinSports",BeIN Sports 2
-https://cdnjs.cloud/b2/mono.m3u8
+https://taraftarium24.ch/b2/mono.m3u8
 #EXTINF:-1 tvg-name="BeIN Sports 3" tvg-logo="https://resmim.net/cdn/2026/07/22/ETtrXH.png" group-title="BeinSports",BeIN Sports 3
-https://cdnjs.cloud/b3/mono.m3u8
+https://taraftarium24.ch/b3/mono.m3u8
 #EXTINF:-1 tvg-name="BeIN Sports 4" tvg-logo="https://resmim.net/cdn/2026/07/22/ETtrXH.png" group-title="BeinSports",BeIN Sports 4
-https://cdnjs.cloud/b4/mono.m3u8
+https://taraftarium24.ch/b4/mono.m3u8
 #EXTINF:-1 tvg-name="BeIN Sports 5" tvg-logo="https://resmim.net/cdn/2026/07/22/ETtrXH.png" group-title="BeinSports",BeIN Sports 5
-https://cdnjs.cloud/b5/mono.m3u8
+https://taraftarium24.ch/b5/mono.m3u8
 #EXTINF:-1 tvg-name="BeIN Sports 1 Max" tvg-logo="https://resmim.net/cdn/2026/07/22/ETtrXH.png" group-title="BeinSports",BeIN Sports 1 Max
-https://cdnjs.cloud/bm1/mono.m3u8
+https://taraftarium24.ch/bm1/mono.m3u8
 #EXTINF:-1 tvg-name="BeIN Sports 2 Max" tvg-logo="https://resmim.net/cdn/2026/07/22/ETtrXH.png" group-title="BeinSports",BeIN Sports 2 Max
-https://cdnjs.cloud/bm2/mono.m3u8
+https://taraftarium24.ch/bm2/mono.m3u8
 #EXTINF:-1 tvg-name="Exxen Sports 1" tvg-logo="" group-title="Exxen",Exxen Sports 1
-https://cdnjs.cloud/exn1/mono.m3u8
+https://taraftarium24.ch/exn1/mono.m3u8
 #EXTINF:-1 tvg-name="Exxen Sports 2" tvg-logo="" group-title="Exxen",Exxen Sports 2
-https://cdnjs.cloud/exn2/mono.m3u8
+https://taraftarium24.ch/exn2/mono.m3u8
 #EXTINF:-1 tvg-name="Exxen Sports 3" tvg-logo="" group-title="Exxen",Exxen Sports 3
-https://cdnjs.cloud/exn3/mono.m3u8
+https://taraftarium24.ch/exn3/mono.m3u8
 #EXTINF:-1 tvg-name="Exxen Sports 4" tvg-logo="" group-title="Exxen",Exxen Sports 4
-https://cdnjs.cloud/exn4/mono.m3u8
+https://taraftarium24.ch/exn4/mono.m3u8
 #EXTINF:-1 tvg-name="S Sports 1" tvg-logo="" group-title="S Sports",S Sports 1
-https://cdnjs.cloud/ss/mono.m3u8
+https://taraftarium24.ch/ss/mono.m3u8
 #EXTINF:-1 tvg-name="S Sports 2" tvg-logo="" group-title="S Sports",S Sports 2
-https://cdnjs.cloud/ss2/mono.m3u8
+https://taraftarium24.ch/ss2/mono.m3u8
 #EXTINF:-1 tvg-name="Tivibu Sports" tvg-logo="" group-title="Tivibu",Tivibu Sports
-https://cdnjs.cloud/t1/mono.m3u8
+https://taraftarium24.ch/t1/mono.m3u8
 #EXTINF:-1 tvg-name="Tivibu Sports 2" tvg-logo="" group-title="Tivibu",Tivibu Sports 2
-https://cdnjs.cloud/t2/mono.m3u8
+https://taraftarium24.ch/t2/mono.m3u8
 #EXTINF:-1 tvg-name="Tivibu Sports 3" tvg-logo="" group-title="Tivibu",Tivibu Sports 3
-https://cdnjs.cloud/t3/mono.m3u8
+https://taraftarium24.ch/t3/mono.m3u8
 #EXTINF:-1 tvg-name="Tivibu Sports 4" tvg-logo="" group-title="Tivibu",Tivibu Sports 4
-https://cdnjs.cloud/t4/mono.m3u8
+https://taraftarium24.ch/t4/mono.m3u8
 #EXTINF:-1 tvg-name="Smart Spor" tvg-logo="" group-title="Smart Sports",Smart Spor
-https://cdnjs.cloud/smarts/mono.m3u8
+https://taraftarium24.ch/smarts/mono.m3u8
 #EXTINF:-1 tvg-name="Smart Spor 2" tvg-logo="" group-title="Smart Sports",Smart Spor 2
-https://cdnjs.cloud/sms2/mono.m3u8
+https://taraftarium24.ch/sms2/mono.m3u8
 #EXTINF:-1 tvg-name="TRT Spor" tvg-logo="" group-title="TRT",TRT Spor
-https://cdnjs.cloud/trtspor/mono.m3u8
+https://taraftarium24.ch/trtspor/mono.m3u8
 #EXTINF:-1 tvg-name="TRT Spor Yıldız" tvg-logo="" group-title="TRT",TRT Spor Yıldız
-https://cdnjs.cloud/trtspor2/mono.m3u8
+https://taraftarium24.ch/trtspor2/mono.m3u8
 #EXTINF:-1 tvg-name="NBA TV" tvg-logo="" group-title="NBA",NBA TV
-https://cdnjs.cloud/nbatv/mono.m3u8
+https://taraftarium24.ch/nbatv/mono.m3u8
 #EXTINF:-1 tvg-name="Eurosport 1" tvg-logo="" group-title="Eurosport",Eurosport 1
-https://cdnjs.cloud/eu1/mono.m3u8
+https://taraftarium24.ch/eu1/mono.m3u8
 #EXTINF:-1 tvg-name="Eurosport 2" tvg-logo="" group-title="Eurosport",Eurosport 2
-https://cdnjs.cloud/eu2/mono.m3u8
+https://taraftarium24.ch/eu2/mono.m3u8
 #EXTINF:-1 tvg-name="A Spor" tvg-logo="" group-title="Ulusal",A Spor
-https://cdnjs.cloud/as/mono.m3u8
+https://taraftarium24.ch/as/mono.m3u8
 #EXTINF:-1 tvg-name="ATV" tvg-logo="" group-title="Ulusal",ATV
-https://cdnjs.cloud/atv/mono.m3u8
+https://taraftarium24.ch/atv/mono.m3u8
 #EXTINF:-1 tvg-name="TV8" tvg-logo="" group-title="Ulusal",TV8
-https://cdnjs.cloud/tv8/mono.m3u8
+https://taraftarium24.ch/tv8/mono.m3u8
 #EXTINF:-1 tvg-name="TV8.5" tvg-logo="" group-title="Ulusal",TV8.5
-https://cdnjs.cloud/tv85/mono.m3u8
+https://taraftarium24.ch/tv85/mono.m3u8
 #EXTINF:-1 tvg-name="FB TV" tvg-logo="" group-title="Diğer",FB TV
-https://cdnjs.cloud/fbtv/mono.m3u8
+https://taraftarium24.ch/fbtv/mono.m3u8
 #EXTINF:-1 tvg-name="GS TV" tvg-logo="" group-title="Diğer",GS TV
-https://cdnjs.cloud/gstv/mono.m3u8
+https://taraftarium24.ch/gstv/mono.m3u8
 #EXTINF:-1 tvg-name="TJK TV" tvg-logo="" group-title="Yarış",TJK TV
-https://cdnjs.cloud/tjktv/mono.m3u8
+https://taraftarium24.ch/tjktv/mono.m3u8
