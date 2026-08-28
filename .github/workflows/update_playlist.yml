@@ -2,9 +2,9 @@ name: Update Vavoo M3U Playlist
 
 on:
   schedule:
-    # Her 3 saatte bir otomatik calisir
+    # Her 3 saatte bir otomatik çalışır
     - cron: '0 */3 * * *'
-  workflow_dispatch: # GitHub uzerinden manuel başlatma butonu sunar
+  workflow_dispatch: # GitHub arayüzünden manuel başlatma butonu sağlar
 
 jobs:
   build:
@@ -21,7 +21,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install requests
+          pip install requests cloudscraper
 
       - name: Run playlist generator
         run: python scripts/update_playlist.py
