@@ -1,43 +1,40 @@
 import os
-import re
-import requests
-import uuid
-import time
+import cloudscraper
 
-COMMON_UA = "VAVOO/2.6"
+# Cloudflare ve bot engellerini aşan scraper nesnesi
+scraper = cloudscraper.create_scraper(
+    browser={
+        'browser': 'chrome',
+        'platform': 'android',
+        'desktop': False
+    }
+)
 
-# Eklemek istediğin kanalların ID'leri (watch?live= SONRASINDAKİ METİN)
 CHANNELS = [
     {"name": "Kanal D", "id": "3828793616b62b9cc5834c"},
-    # Diğer kanalları buraya ekleyebilirsin:
-    # {"name": "Star TV", "id": "BURAYA_DIĞER_ID"},
+    # Diğer kanalların ID'lerini buraya ekleyebilirsiniz
 ]
 
 def get_direct_stream(live_id):
-    """Vavoo canlı sunucusundan doğrudan çalışan m3u8 adresini alır."""
-    # Alternatif 1: Doğrudan live stream endpoint'i
     urls = [
         f"https://vavoo.to/live2/index.m3u8?id={live_id}",
         f"https://vavoo.to/live/index.m3u8?id={live_id}"
     ]
     
     headers = {
-        "User-Agent": COMMON_UA,
-        "Accept": "*/*",
-        "Connection": "keep-alive"
+        "User-Agent": "VAVOO/2.6",
+        "Accept": "*/*"
     }
 
     for url in urls:
         try:
-            res = requests.get(url, headers=headers, allow_redirects=True, timeout=10)
-            print(f"[*] Kanal deneme ({live_id[:8]}...): {res.status_code}")
+            res = scraper.get(url, headers=headers, timeout=15)
+            print(f"[*] Kanal deneme ({live_id[:8]}...): Status {res.status_code}")
             
-            # Eğer yönlendirme (redirect) yapıldıysa veya 200 geldiyse final URL'yi kontrol et
-            final_url = res.url
-            if res.status_code == 200 and not any(bad in final_url for bad in ["vypn.net", "weiterschauen"]):
-                return final_url
+            if res.status_code == 200 and not any(bad in res.url for bad in ["vypn.net", "weiterschauen"]):
+                return res.url
         except Exception as e:
-            print(f"[-] Istek hatasi ({url}): {e}")
+            print(f"[-] Scraper hatasi ({url}): {e}")
             
     return None
 
