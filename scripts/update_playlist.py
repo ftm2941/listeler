@@ -10,12 +10,16 @@ scraper = cloudscraper.create_scraper(
     }
 )
 
+# Kanal listeniz (watch?live= sonrasındaki ID'ler)
 CHANNELS = [
     {"name": "Kanal D", "id": "3828793616b62b9cc5834c"},
-    # Diğer kanalların ID'lerini buraya ekleyebilirsiniz
+    # Diğer kanalları buraya ekleyebilirsiniz:
+    # {"name": "Star TV", "id": "BURAYA_ID"},
+    # {"name": "ATV", "id": "BURAYA_ID"},
 ]
 
 def get_direct_stream(live_id):
+    """Vavoo sunucusundan m3u8 akış adresini çözer."""
     urls = [
         f"https://vavoo.to/live2/index.m3u8?id={live_id}",
         f"https://vavoo.to/live/index.m3u8?id={live_id}"
