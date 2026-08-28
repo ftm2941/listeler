@@ -1,53 +1,53 @@
 #EXTM3U
-#EXTVLCOPT:http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36
-#EXTVLCOPT:http-referrer=https://taraftarium1077.xyz
-#EXT-X-USER-AGENT:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36
-#EXT-X-REFERER:https://taraftarium1081.xyz
-#EXT-X-ORIGIN:https://taraftarium1081.xyz
+#EXTVLCOPT:http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36
+#EXTVLCOPT:http-referrer=https://taraftarium24.ch
+#EXT-X-USER-AGENT:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36
+#EXT-X-REFERER:https://taraftarium24.ch
+#EXT-X-ORIGIN:https://taraftarium24.ch
 
 #EXTINF:-1 tvg-name="BeIN Sports 1" tvg-logo="https://resmim.net/cdn/2026/07/22/ETtrXH.png" group-title="BeinSports",BeIN Sports 1
-https://patronspor.wet1.cfd/patron/mono.m3u8
+https://taraftarium1081.xyz/patron/mono.m3u8
 #EXTINF:-1 tvg-name="BeIN Sports 2" tvg-logo="https://resmim.net/cdn/2026/07/22/ETtrXH.png" group-title="BeinSports",BeIN Sports 2
-https://patronspor.wet1.cfd/b2/mono.m3u8
+https://taraftarium1081.xyz/b2/mono.m3u8
 #EXTINF:-1 tvg-name="BeIN Sports 3" tvg-logo="https://resmim.net/cdn/2026/07/22/ETtrXH.png" group-title="BeinSports",BeIN Sports 3
-https://patronspor.wet1.cfd/b3/mono.m3u8
+https://taraftarium1081.xyz/b3/mono.m3u8
 #EXTINF:-1 tvg-name="BeIN Sports 4" tvg-logo="https://resmim.net/cdn/2026/07/22/ETtrXH.png" group-title="BeinSports",BeIN Sports 4
-https://patronspor.wet1.cfd/b4/mono.m3u8
+https://taraftarium1081.xyz/b4/mono.m3u8
 #EXTINF:-1 tvg-name="BeIN Sports 5" tvg-logo="https://resmim.net/cdn/2026/07/22/ETtrXH.png" group-title="BeinSports",BeIN Sports 5
-https://patronspor.wet1.cfd/b5/mono.m3u8
+https://taraftarium1081.xyz/b5/mono.m3u8
 #EXTINF:-1 tvg-name="BeIN Sports 1 Max" tvg-logo="https://resmim.net/cdn/2026/07/22/ETtrXH.png" group-title="BeinSports",BeIN Sports 1 Max
-https://patronspor.wet1.cfd/bm1/mono.m3u8
+https://taraftarium1081.xyz/bm1/mono.m3u8
 #EXTINF:-1 tvg-name="BeIN Sports 2 Max" tvg-logo="https://resmim.net/cdn/2026/07/22/ETtrXH.png" group-title="BeinSports",BeIN Sports 2 Max
-https://patronspor.wet1.cfd/bm2/mono.m3u8
-#EXTINF:-1 tvg-name="S Sports 1" tvg-logo="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRBw0m1bb64ZQWBrW0CbsQWljjZn_xMyadd6GAtTT57LA&s=10" group-title="S Sports",S Sports 1
-https://patronspor.wet1.cfd/ss/mono.m3u8
-#EXTINF:-1 tvg-name="S Sports 2" tvg-logo="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRBw0m1bb64ZQWBrW0CbsQWljjZn_xMyadd6GAtTT57LA&s=10" group-title="S Sports",S Sports 2
-https://patronspor.wet1.cfd/ss2/mono.m3u8
-#EXTINF:-1 tvg-name="Tivibu Sports" tvg-logo="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQWV9Dcu2_mquwvTERgrq-ikcVSPlE4vxIqGajCldYSmA&s=10" group-title="Tivibu",Tivibu Sports
-https://patronspor.wet1.cfd/t1/mono.m3u8
-#EXTINF:-1 tvg-name="Tivibu Sports 2" tvg-logo="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQWV9Dcu2_mquwvTERgrq-ikcVSPlE4vxIqGajCldYSmA&s=10" group-title="Tivibu",Tivibu Sports 2
-https://patronspor.wet1.cfd/t2/mono.m3u8
-#EXTINF:-1 tvg-name="Tivibu Sports 3" tvg-logo="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQWV9Dcu2_mquwvTERgrq-ikcVSPlE4vxIqGajCldYSmA&s=10" group-title="Tivibu",Tivibu Sports 3
-https://patronspor.wet1.cfd/t3/mono.m3u8
-#EXTINF:-1 tvg-name="Tivibu Sports 4" tvg-logo="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQWV9Dcu2_mquwvTERgrq-ikcVSPlE4vxIqGajCldYSmA&s=10" group-title="Tivibu",Tivibu Sports 4
-https://patronspor.wet1.cfd/t4/mono.m3u8
-#EXTINF:-1 tvg-name="Smart Spor" group-title="Smart Sports",Smart Spor
-https://patronspor.wet1.cfd/smarts/mono.m3u8
-#EXTINF:-1 tvg-name="Smart Spor 2" group-title="Smart Sports",Smart Spor 2
-https://patronspor.wet1.cfd/sms2/mono.m3u8
-#EXTINF:-1 tvg-name="TRT Spor" group-title="TRT",TRT Spor
-https://patronspor.wet1.cfd/trtspor/mono.m3u8
-#EXTINF:-1 tvg-name="TRT Spor 2" group-title="TRT",TRT Spor 2
-https://patronspor.wet1.cfd/trtspor2/mono.m3u8
-#EXTINF:-1 tvg-name="A Spor" group-title="Ulusal",A Spor
-https://patronspor.wet1.cfd/as/mono.m3u8
-#EXTINF:-1 tvg-name="ATV" group-title="Ulusal",ATV
-https://patronspor.wet1.cfd/atv/mono.m3u8
-#EXTINF:-1 tvg-name="TV8" group-title="Ulusal",TV8
-https://patronspor.wet1.cfd/tv8/mono.m3u8
-#EXTINF:-1 tvg-name="TV8.5" group-title="Ulusal",TV8.5
-https://patronspor.wet1.cfd/tv85/mono.m3u8
-#EXTINF:-1 tvg-name="NBA TV" group-title="NBA",NBA TV
-https://patronspor.wet1.cfd/nbatv/mono.m3u8
-#EXTINF:-1 tvg-name="Eurosport 1" group-title="Eurosport",Eurosport 1
-https://patronspor.wet1.cfd/eu1/mono.m3u8
+https://taraftarium1081.xyz/bm2/mono.m3u8
+#EXTINF:-1 tvg-name="S Sports 1" tvg-logo="" group-title="S Sports",S Sports 1
+https://taraftarium1081.xyz/ss/mono.m3u8
+#EXTINF:-1 tvg-name="S Sports 2" tvg-logo="" group-title="S Sports",S Sports 2
+https://taraftarium1081.xyz/ss2/mono.m3u8
+#EXTINF:-1 tvg-name="Tivibu Sports" tvg-logo="" group-title="Tivibu",Tivibu Sports
+https://taraftarium1081.xyz/t1/mono.m3u8
+#EXTINF:-1 tvg-name="Tivibu Sports 2" tvg-logo="" group-title="Tivibu",Tivibu Sports 2
+https://taraftarium1081.xyz/t2/mono.m3u8
+#EXTINF:-1 tvg-name="Tivibu Sports 3" tvg-logo="" group-title="Tivibu",Tivibu Sports 3
+https://taraftarium1081.xyz/t3/mono.m3u8
+#EXTINF:-1 tvg-name="Tivibu Sports 4" tvg-logo="" group-title="Tivibu",Tivibu Sports 4
+https://taraftarium1081.xyz/t4/mono.m3u8
+#EXTINF:-1 tvg-name="Smart Spor" tvg-logo="" group-title="Smart Sports",Smart Spor
+https://taraftarium1081.xyz/smarts/mono.m3u8
+#EXTINF:-1 tvg-name="Smart Spor 2" tvg-logo="" group-title="Smart Sports",Smart Spor 2
+https://taraftarium1081.xyz/sms2/mono.m3u8
+#EXTINF:-1 tvg-name="TRT Spor" tvg-logo="" group-title="TRT",TRT Spor
+https://taraftarium1081.xyz/trtspor/mono.m3u8
+#EXTINF:-1 tvg-name="TRT Spor 2" tvg-logo="" group-title="TRT",TRT Spor 2
+https://taraftarium1081.xyz/trtspor2/mono.m3u8
+#EXTINF:-1 tvg-name="NBA TV" tvg-logo="" group-title="NBA",NBA TV
+https://taraftarium1081.xyz/nbatv/mono.m3u8
+#EXTINF:-1 tvg-name="Eurosport 1" tvg-logo="" group-title="Eurosport",Eurosport 1
+https://taraftarium1081.xyz/eu1/mono.m3u8
+#EXTINF:-1 tvg-name="A Spor" tvg-logo="" group-title="Ulusal",A Spor
+https://taraftarium1081.xyz/as/mono.m3u8
+#EXTINF:-1 tvg-name="ATV" tvg-logo="" group-title="Ulusal",ATV
+https://taraftarium1081.xyz/atv/mono.m3u8
+#EXTINF:-1 tvg-name="TV8" tvg-logo="" group-title="Ulusal",TV8
+https://taraftarium1081.xyz/tv8/mono.m3u8
+#EXTINF:-1 tvg-name="TV8.5" tvg-logo="" group-title="Ulusal",TV8.5
+https://taraftarium1081.xyz/tv85/mono.m3u8
