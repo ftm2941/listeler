@@ -1,31 +1,39 @@
-name: Taraftarium Kanal Güncelleyici
+name: Update SporB Generated Channel List
 
 on:
   schedule:
-    # Her 4 saatte bir otomatik çalışır
-    - cron: '0 */4 * * *'
-  workflow_dispatch: # GitHub arayüzünden manuel tetikleme butonu ekler
+    # Her 3 saatte bir otomatik çalışır
+    - cron: '0 */3 * * *'
+  workflow_dispatch: # GitHub arayüzünden manuel "Run workflow" butonuyla tetiklemek için
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Repoyu Klonla
-      uses: actions/checkout@v3
+      - name: Repoyu Klonla
+        uses: actions/checkout@v4
 
-    - name: Python Ortamını Kur
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.x'
+      - name: Python Ortamını Kur
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
 
-    - name: Kanal Çekme Betiğini Çalıştır
-      run: python update_list.py
+      - name: Bağımlılıkları ve Playwright Tarayıcısını Kur
+        run: |
+          python -m pip install --upgrade pip
+          pip install playwright
+          playwright install chromium
 
-    - name: Değişiklikleri Git ile Push Et
-      run: |
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action Bot"
-        git add kanallar.m3u8
-        git diff-index --quiet HEAD || git commit -m "kanallar.m3u8 güncellendi [otomatik]"
-        git push
+      - name: M3U8 Güncelleme Betiğini Çalıştır
+        run: |
+          python update_list.py
+
+      - name: Değişiklikleri GitHub Reposuna Push Et
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add kanallar.m3u8
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Auto update kanallar.m3u8" && git push)
