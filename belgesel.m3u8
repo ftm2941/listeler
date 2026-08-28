@@ -5,11 +5,9 @@
 #EXT-X-REFERER:https://vavoo.to
 #EXT-X-ORIGIN:https://vavoo.to
 
-#EXTINF:-1 tvg-name="Tarih",Tarih
 #EXTVLCOPT:http-user-agent=VAVOO/2.6
-https://vavoo.to/live2/index.m3u8?id=3856957052050da882aa10
 #EXTINF:-1 group-title="BELGESEL" tvg-id="TARİH TV.tr" tvg-logo="https://www.dsmart.com.tr/api/v1/public/images/kanallar/tarihtv.png"  ,Tarih TV
-https://vavoo.to/vavoo-iptv/play/3856957052050da882aa10
+https://vavoo.to/live2/index.m3u8?id=3856957052050da882aa10
 #EXTINF:-1 group-title="BELGESEL" tvg-id="TARİH TV b.tr" tvg-logo="https://www.dsmart.com.tr/api/v1/public/images/kanallar/tarihtv.png"  ,Tarih TV b
 https://proud-river-e20b.pantonum1.workers.dev/tarihtv.m3u8
 #EXTINF:-1 group-title="BELGESEL" tvg-id="TARİH TV c.tr" tvg-logo="https://www.dsmart.com.tr/api/v1/public/images/kanallar/tarihtv.png"  ,Tarih TV c
