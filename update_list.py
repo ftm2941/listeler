@@ -1,14 +1,9 @@
+import sys
 import re
-import urllib.request
+from playwright.sync_api import sync_playwright
 
 TARGET_URL = "https://taraftarium24.ch"
 OUTPUT_FILE = "kanallar.m3u8"
-
-HEADERS = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36',
-    'Referer': f'{TARGET_URL}/',
-    'Accept-Language': 'tr-TR,tr;q=0.9,en-US;q=0.8,en;q=0.7'
-}
 
 BEIN_LOGO = "https://resmim.net/cdn/2026/07/22/ETtrXH.png"
 
@@ -57,47 +52,58 @@ CHANNELS = [
     {"name": "TJK TV", "logo": "", "group": "Yarış", "path": "tjktv/mono.m3u8"},
 ]
 
-def fetch_stream_base():
-    try:
-        req = urllib.request.Request(TARGET_URL, headers=HEADERS)
-        with urllib.request.urlopen(req, timeout=15) as response:
-            html = response.read().decode('utf-8', errors='ignore')
+def find_stream_cdn():
+    cdn_domain = None
 
-        # JS dosyalarını veya player kaynaklarını bul
-        js_files = re.findall(r'src=["\']([^"\']+\.js(?:\?[^"\']*)?)["\']', html)
-        iframes = re.findall(r'src=["\']([^"\']+)["\']', html)
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        context = browser.new_context(
+            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"
+        )
+        page = context.new_page()
 
-        all_sources = js_files + iframes
-        for src in all_sources:
-            full_url = src if src.startswith("http") else f"{TARGET_URL.rstrip('/')}/{src.lstrip('/')}"
-            try:
-                sub_req = urllib.request.Request(full_url, headers=HEADERS)
-                with urllib.request.urlopen(sub_req, timeout=8) as sub_res:
-                    sub_content = sub_res.read().decode('utf-8', errors='ignore')
+        # Sayfadan geçen tüm HTTP isteklerini dinle
+        def handle_request(request):
+            nonlocal cdn_domain
+            url = request.url
+            # Ağ trafiğinden geçen mono.m3u8 veya cfd/xyz uzantılı canlı akış isteklerini yakala
+            if "mono.m3u8" in url or re.search(r'https?://[a-zA-Z0-9\.\-]+\.(?:cfd|xyz|site|online)/', url):
+                match = re.search(r'(https?://[a-zA-Z0-9\.\-]+\.(?:cfd|xyz|site|online))', url)
+                if match:
+                    cdn_domain = match.group(1)
+
+        page.on("request", handle_request)
+
+        try:
+            print(f"[+] {TARGET_URL} adresine bağlanılıyor...")
+            page.goto(TARGET_URL, wait_until="networkidle", timeout=25000)
+            
+            # Sayfa içinde iframe veya oynatıcı düğmesi varsa tıklama simülasyonu yap
+            page.wait_for_timeout(4000)
+            
+            # Çerçeve (iframe) kaynaklarını tara
+            for frame in page.frames:
+                frame_url = frame.url
+                match = re.search(r'(https?://[a-zA-Z0-9\.\-]+\.(?:cfd|xyz|site|online))', frame_url)
+                if match and not cdn_domain:
+                    cdn_domain = match.group(1)
                     
-                    # CDN Domain kalıpları (örneğin: https://xxx.cfd veya https://xxx.xyz)
-                    found = re.findall(r'https?://[a-zA-Z0-9\.\-]+\.(?:cfd|xyz|online|site|tech|cloud)', sub_content)
-                    for f_domain in found:
-                        if TARGET_URL not in f_domain and "google" not in f_domain and "yandex" not in f_domain:
-                            return f_domain.rstrip('/')
-            except Exception:
-                continue
+        except Exception as e:
+            print(f"[-] Hata oluştu: {e}")
+        finally:
+            browser.close()
 
-        # Ana sayfada doğrudan regex ara
-        direct_matches = re.findall(r'https?://[a-zA-Z0-9\.\-]+\.(?:cfd|xyz|online|site|tech|cloud)', html)
-        for d in direct_matches:
-            if TARGET_URL not in d and "google" not in d and "yandex" not in d:
-                return d.rstrip('/')
-
-        return TARGET_URL
-    except Exception as e:
-        print(f"Hata: {e}")
-        return TARGET_URL
+    return cdn_domain
 
 def build_m3u():
-    base_url = fetch_stream_base()
-    print(f"[+] Tespit edilen CDN Adresi: {base_url}")
+    detected_cdn = find_stream_cdn()
     
+    if not detected_cdn:
+        print("[!] Ağ dinlemesinde otomatik CDN bulunamadı. Varsayılan adres deneniyor...")
+        detected_cdn = TARGET_URL
+        
+    print(f"[✓] Bulunan Doğru CDN Adresi: {detected_cdn}")
+
     m3u_lines = [
         "#EXTM3U",
         "#EXTVLCOPT:http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36",
@@ -111,7 +117,7 @@ def build_m3u():
     for ch in CHANNELS:
         logo_str = f' tvg-logo="{ch["logo"]}"' if ch["logo"] else ' tvg-logo=""'
         extinf = f'#EXTINF:-1 tvg-name="{ch["name"]}"{logo_str} group-title="{ch["group"]}",{ch["name"]}'
-        stream_link = f"{base_url}/{ch['path']}"
+        stream_link = f"{detected_cdn.rstrip('/')}/{ch['path']}"
         
         m3u_lines.append(extinf)
         m3u_lines.append(stream_link)
@@ -119,7 +125,7 @@ def build_m3u():
     with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
         f.write("\n".join(m3u_lines) + "\n")
         
-    print(f"[+] {OUTPUT_FILE} güncellendi.")
+    print(f"[✓] {OUTPUT_FILE} başarıyla oluşturuldu.")
 
 if __name__ == "__main__":
     build_m3u()
