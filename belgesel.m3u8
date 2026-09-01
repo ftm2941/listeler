@@ -12,6 +12,8 @@ https://kool.to/kool-iptv/play/3856957052050da882aa10
 https://proud-river-e20b.pantonum1.workers.dev/tarihtv.m3u8
 #EXTINF:-1 group-title="BELGESEL" tvg-id="TARİH TV c.tr" tvg-logo="https://www.dsmart.com.tr/api/v1/public/images/kanallar/tarihtv.png"  ,Tarih TV c
 https://65.108.239.207/tarihtv/index.m3u8
+#EXTINF:-1 group-title="BELGESEL" tvg-id="TARİH TV d.tr" tvg-logo="https://www.dsmart.com.tr/api/v1/public/images/kanallar/tarihtv.png"  ,Tarih TV d
+https://mjkskdvpfpb1fbv.ngolpdkyoctjcddxshli469r.org/sunshine/iq5kKODxFyVm76_K6dutxYIu-nVmS1cv32p_-k380Aq3dWtVsrHEM97FIex9GDIgDaqwA8p8Iay0t6lUErELB03PA6aLBbrhH55ax070ta_gtGVQVZfiR6r9v7RXivmmExfqI_xnjAC_A312TxzMItL7rHDLVHlbW5p1_J73iUKu7Y2OLQstDDdj3bk9j-S1M5n2DTri8WXTPROYtrhfRCoKKVQXqwcRIKdda7u9c8J7wJXSFpDbkdJgDvGidi_v/hls/index.m3u8
 #EXTINF:-1 group-title="BELGESEL" tvg-id="BBC EARTH.tr" tvg-logo="https://www.creativeboom.com/upload/articles/8f/8f6cd51ec38e4f9ccab6a7350ba42d4ca9c429da_1280.png"  ,BBC earth
 https://65.108.239.207/bbc/index.m3u8
 #EXTVLCOPT:http-user-agent=VAVOO/2.6
