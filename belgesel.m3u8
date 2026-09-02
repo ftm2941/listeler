@@ -13,7 +13,7 @@ https://proud-river-e20b.pantonum1.workers.dev/tarihtv.m3u8
 #EXTINF:-1 group-title="BELGESEL" tvg-id="TARİH TV c.tr" tvg-logo="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT0ATxe2wyGOxT4Lc6XNoYNI-qpsoXKelRBmPfG4tGPIw&s=10"  ,Tarih TV c
 https://65.108.239.207/tarihtv/index.m3u8
 #EXTVLCOPT:http-user-agent=VAVOO/2.6
-#EXTINF:-1 group-title="BELGESEL" tvg-id="TARİH TV d.tr" tvg-logo="https://www.dsmart.com.tr/api/v1/public/images/kanallar/tarihtv.png"  ,Tarih TV d
+#EXTINF:-1 group-title="BELGESEL" tvg-id="TARİH TV d.tr" tvg-logo="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT0ATxe2wyGOxT4Lc6XNoYNI-qpsoXKelRBmPfG4tGPIw&s=10"  ,Tarih TV d
 https://mjkskdvpfpb1fbv.ngolpdkyoctjcddxshli469r.org/sunshine/iq5kKODxFyVm76_K6dutxYIu-nVmS1cv32p_-k380Aq3dWtVsrHEM97FIex9GDIgDaqwA8p8Iay0t6lUErELB03PA6aLBbrhH55ax070ta_gtGVQVZfiR6r9v7RXivmmExfqI_xnjAC_A312TxzMItL7rHDLVHlbW5p1_J73iUKu7Y2OLQstDDdj3bk9j-S1M5n2DTri8WXTPROYtrhfRCoKKVQXqwcRIKdda7u9c8J7wJXSFpDbkdJgDvGidi_v/hls/index.m3u8
 #EXTINF:-1 group-title="BELGESEL" tvg-id="BBC EARTH.tr" tvg-logo="https://www.creativeboom.com/upload/articles/8f/8f6cd51ec38e4f9ccab6a7350ba42d4ca9c429da_1280.png"  ,BBC earth
 https://65.108.239.207/bbc/index.m3u8
@@ -21,9 +21,9 @@ https://65.108.239.207/bbc/index.m3u8
 #EXTINF:-1 group-title="BELGESEL" tvg-id="BBC EARTH b.tr" tvg-logo="https://www.creativeboom.com/upload/articles/8f/8f6cd51ec38e4f9ccab6a7350ba42d4ca9c429da_1280.png"  ,BBC earth b
 https://kool.to/kool-iptv/play/22284968562a623d1b95b4
 #EXTVLCOPT:http-user-agent=VAVOO/2.6
-#EXTINF:-1 group-title="BELGESEL" tvg-id="VIASAT HISTORY.tr" tvg-logo="https://www.dsmart.com.tr/api/v1/public/images/kanallar/History%20Logo%20on%20Black%20BG.PNG" ,History
+#EXTINF:-1 group-title="BELGESEL" tvg-id="VIASAT HISTORY.tr" tvg-logo="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSoGNvPGKBI3Uw5AqmBukb76UBtXYl4BhO-fYdisBAt6Q&s=10.png" ,History
 https://vavoo.to/watch?live=1900945213599b64fe115b
-#EXTINF:-1 group-title="BELGESEL" tvg-id="VIASAT HISTORY c.tr" tvg-logo="https://www.dsmart.com.tr/api/v1/public/images/kanallar/History%20Logo%20on%20Black%20BG.PNG" ,History c
+#EXTINF:-1 group-title="BELGESEL" tvg-id="VIASAT HISTORY c.tr" tvg-logo="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSoGNvPGKBI3Uw5AqmBukb76UBtXYl4BhO-fYdisBAt6Q&s=10.png" ,History c
 https://65.108.239.207/history/index.m3u8
 #EXTVLCOPT:http-user-agent=VAVOO/2.6
 #EXTINF:-1 group-title="BELGESEL" tvg-id="DISCOVERY CHANNEL.tr" tvg-logo="https://feo.kablowebtv.com/resize/168A635D265A4328C2883FB4CD8FF/0/0/Vod/HLS/aaac1290-6d58-4036-b106-a7026a4c1bfc.png"  ,Discovery
