@@ -34,7 +34,7 @@ https://proud-river-e20b.pantonum1.workers.dev/discovery.m3u8
 https://65.108.239.207/discovery/index.m3u8
 #EXTVLCOPT:http-user-agent=VAVOO/2.6
 #EXTINF:-1 group-title="BELGESEL" tvg-id="DISCOVERY ID.tr" tvg-logo="https://feo.kablowebtv.com/resize/168A635D265A4328C2883FB4CD8FF/0/0/Vod/HLS/539be808-86e7-4ed2-aa0b-130dbc1ac450.png" ,Discovery ID
-https://vavoo.to/vavoo-iptv/play/20954040600611bde9e160
+https://vavoo.to/watch?live=20954040600611bde9e160
 #EXTINF:-1 group-title="BELGESEL" tvg-id="DISCOVERY ID b.tr" tvg-logo="https://feo.kablowebtv.com/resize/168A635D265A4328C2883FB4CD8FF/0/0/Vod/HLS/539be808-86e7-4ed2-aa0b-130dbc1ac450.png" ,Discovery ID b
 https://proud-river-e20b.pantonum1.workers.dev/discs.m3u8
 #EXTINF:-1 group-title="BELGESEL" tvg-id="DISCOVERY ID c.tr" tvg-logo="https://feo.kablowebtv.com/resize/168A635D265A4328C2883FB4CD8FF/0/0/Vod/HLS/539be808-86e7-4ed2-aa0b-130dbc1ac450.png" ,Discovery ID c
