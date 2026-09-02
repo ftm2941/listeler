@@ -6,11 +6,11 @@
 #EXT-X-ORIGIN:https://vavoo.to
 
 #EXTVLCOPT:http-user-agent=VAVOO/2.6
-#EXTINF:-1 group-title="BELGESEL" tvg-id="TARİH TV.tr" tvg-logo="https://www.dsmart.com.tr/api/v1/public/images/kanallar/tarihtv.png"  ,Tarih TV
+#EXTINF:-1 group-title="BELGESEL" tvg-id="TARİH TV.tr" tvg-logo="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT0ATxe2wyGOxT4Lc6XNoYNI-qpsoXKelRBmPfG4tGPIw&s=10"  ,Tarih TV
 https://kool.to/kool-iptv/play/3856957052050da882aa10
-#EXTINF:-1 group-title="BELGESEL" tvg-id="TARİH TV b.tr" tvg-logo="https://www.dsmart.com.tr/api/v1/public/images/kanallar/tarihtv.png"  ,Tarih TV b
+#EXTINF:-1 group-title="BELGESEL" tvg-id="TARİH TV b.tr" tvg-logo="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT0ATxe2wyGOxT4Lc6XNoYNI-qpsoXKelRBmPfG4tGPIw&s=10"  ,Tarih TV b
 https://proud-river-e20b.pantonum1.workers.dev/tarihtv.m3u8
-#EXTINF:-1 group-title="BELGESEL" tvg-id="TARİH TV c.tr" tvg-logo="https://www.dsmart.com.tr/api/v1/public/images/kanallar/tarihtv.png"  ,Tarih TV c
+#EXTINF:-1 group-title="BELGESEL" tvg-id="TARİH TV c.tr" tvg-logo="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT0ATxe2wyGOxT4Lc6XNoYNI-qpsoXKelRBmPfG4tGPIw&s=10"  ,Tarih TV c
 https://65.108.239.207/tarihtv/index.m3u8
 #EXTVLCOPT:http-user-agent=VAVOO/2.6
 #EXTINF:-1 group-title="BELGESEL" tvg-id="TARİH TV d.tr" tvg-logo="https://www.dsmart.com.tr/api/v1/public/images/kanallar/tarihtv.png"  ,Tarih TV d
