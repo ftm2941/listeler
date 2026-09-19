@@ -10,7 +10,7 @@ BASE_DOMAIN_SUFFIX = ".click"
 START_INDEX = 101
 MAX_TRY_COUNT = 30  # 101, 102, 103... şeklinde ileriye doğru dener
 
-OUTPUT_FILE = "kanallar.m3u8"
+OUTPUT_FILE = "kanallar2.m3u8"
 BEIN_LOGO = "https://resmim.net/cdn/2026/07/22/ETtrXH.png"
 
 CHANNELS = [
@@ -73,7 +73,6 @@ def get_active_base_url():
                 return final_url
         except Exception:
             continue
-    # Bulunamazsa varsayılan başlangıcı döndürür
     return f"{BASE_DOMAIN_PREFIX}{START_INDEX}{BASE_DOMAIN_SUFFIX}"
 
 def extract_cdn_from_player(active_base_url):
