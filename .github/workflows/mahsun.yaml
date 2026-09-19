@@ -2,9 +2,8 @@ name: M3U Playlist Guncelleme
 
 on:
   schedule:
-    # Her 6 saatte bir otomatik çalışır (istersen süreyi değiştirebilirsin)
     - cron: '0 */6 * * *'
-  workflow_dispatch: # Manuel olarak da tetiklenebilir
+  workflow_dispatch:
 
 jobs:
   update-m3u:
@@ -25,14 +24,14 @@ jobs:
           pip install requests playwright
           playwright install chromium
 
-      - name: Python Betiğini Çalıştır
+      - name: Python Betiğini Çalıştır (mahsun.py)
         run: |
           python mahsun.py
 
-      - name: Değişiklikleri Kaydet ve Gönder (Commit & Push)
+      - name: Değişiklikleri Kaydet ve Gönder (kanallar2.m3u8)
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add kanallar.m3u8
-          git commit -m "Otomatik M3U Playlist Güncellemesi [skip ci]" || echo "Değişiklik yok"
+          git add kanallar2.m3u8
+          git commit -m "Otomatik kanallar2.m3u8 Guncellemesi [skip ci]" || echo "Değişiklik yok"
           git push
