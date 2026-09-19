@@ -1,22 +1,21 @@
-import os
 import urllib.request
 
 url = "https://mahsun-amp.click"
 hedef_dosya = "kanallar2.m3u8"
 
 try:
-    # 1. Adresten içeriği ham haliyle çek
+    # Kaynak adresten güncel içeriği ham haliyle çek
     req = urllib.request.Request(
         url, headers={'User-Agent': 'Mozilla/5.0'}
     )
     with urllib.request.urlopen(req) as response:
-        yeni_veri = response.read().decode('utf-8')
+        canli_veri = response.read().decode('utf-8')
 
-    # 2. Dosyanın mevcut yapısını bozmadan doğrudan kaydet
+    # Gelen veriyi yapı hiç bozulmadan kanallar2.m3u8 dosyasına yaz
     with open(hedef_dosya, "w", encoding="utf-8") as f:
-        f.write(yeni_veri)
+        f.write(canli_veri)
 
-    print(f"İşlem başarılı. İçerik {hedef_dosya} dosyasına yapısı bozulmadan yazıldı.")
+    print(f"Başarılı: Yapı korundu ve canlı linkler {hedef_dosya} dosyasına işlendi.")
 
 except Exception as e:
     print(f"Hata oluştu: {e}")
