@@ -5,6 +5,14 @@
 #EXT-X-REFERER:https://vavoo.to
 #EXT-X-ORIGIN:https://vavoo.to
 
+#EXTINF:-1 tvg-id="daddy_1011" tvg-name="A Spor Turkey" group-title="Turkey",A Spor Turkey
+#EXTVLCOPT:http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36
+#EXTVLCOPT:http-referrer=https://hamis.romponalis.st/
+#EXTVLCOPT:http-origin=https://hamis.romponalis.st
+https://dlstreams.st/watch.php?id=1011
+
+
+
 #EXTVLCOPT:http-user-agent=VAVOO/2.6
 #EXTINF:-1 group-title="BELGESEL" tvg-id="TARİH TV.tr" tvg-logo="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT0ATxe2wyGOxT4Lc6XNoYNI-qpsoXKelRBmPfG4tGPIw&s=10"  ,Tarih TV
 https://kool.ws/kool-iptv/play/3856957052050da882aa10
