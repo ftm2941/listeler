@@ -12,14 +12,17 @@ https://kool.ws/kool-iptv/play/3856957052050da882aa10
 https://proud-river-e20b.pantonum1.workers.dev/tarihtv.m3u8
 #EXTINF:-1 group-title="BELGESEL" tvg-id="TARİH TV c.tr" tvg-logo="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT0ATxe2wyGOxT4Lc6XNoYNI-qpsoXKelRBmPfG4tGPIw&s=10"  ,Tarih TV c
 https://65.108.239.207/tarihtv/index.m3u8
-#EXTVLCOPT:http-user-agent=VAVOO/2.6
-#EXTINF:-1 group-title="BELGESEL" tvg-id="TARİH TV d.tr" tvg-logo="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT0ATxe2wyGOxT4Lc6XNoYNI-qpsoXKelRBmPfG4tGPIw&s=10"  ,Tarih TV d
-https://dlstreams.st/watch.php?id=1011
 #EXTINF:-1 group-title="BELGESEL" tvg-id="BBC EARTH.tr" tvg-logo="https://www.creativeboom.com/upload/articles/8f/8f6cd51ec38e4f9ccab6a7350ba42d4ca9c429da_1280.png"  ,BBC earth
 https://65.108.239.207/bbc/index.m3u8
 #EXTVLCOPT:http-user-agent=VAVOO/2.6
 #EXTINF:-1 group-title="BELGESEL" tvg-id="BBC EARTH b.tr" tvg-logo="https://www.creativeboom.com/upload/articles/8f/8f6cd51ec38e4f9ccab6a7350ba42d4ca9c429da_1280.png"  ,BBC earth b
 https://kool.ws/kool-iptv/play/22284968562a623d1b95b4
+#EXTVLCOPT:http-user-agent=VAVOO/2.6
+#EXTINF:-1 group-title="BELGESEL" tvg-id="BBC EARTH c.tr" tvg-logo="https://www.creativeboom.com/upload/articles/8f/8f6cd51ec38e4f9ccab6a7350ba42d4ca9c429da_1280.png"  ,BBC earth c
+https://kool.ws/kool-iptv/play/261373161436ead236ae50
+#EXTVLCOPT:http-user-agent=VAVOO/2.6
+#EXTINF:-1 group-title="BELGESEL" tvg-id="BBC EARTH d.tr" tvg-logo="https://www.creativeboom.com/upload/articles/8f/8f6cd51ec38e4f9ccab6a7350ba42d4ca9c429da_1280.png"  ,BBC earth d
+https://kool.ws/kool-iptv/play/2618455562938e9a0e0faf
 #EXTVLCOPT:http-user-agent=VAVOO/2.6
 #EXTINF:-1 group-title="BELGESEL" tvg-id="VIASAT HISTORY.tr" tvg-logo="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSoGNvPGKBI3Uw5AqmBukb76UBtXYl4BhO-fYdisBAt6Q&s=10.png" ,History
 https://kool.ws/kool-iptv/play/1900945213599b64fe115b
