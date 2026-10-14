@@ -38,7 +38,7 @@ https://kool.ws/kool-iptv/play/420748756258a17d4693fc
 #EXTINF:-1 group-title="BELGESEL" tvg-id="DISCOVERY CHANNEL.tr" tvg-logo="https://feo.kablowebtv.com/resize/168A635D265A4328C2883FB4CD8FF/0/0/Vod/HLS/aaac1290-6d58-4036-b106-a7026a4c1bfc.png"  ,Discovery
 https://kool.ws/kool-iptv/play/4017734592f45fd8456678
 #EXTINF:-1 group-title="BELGESEL" tvg-id="DISCOVERY CHANNEL B.tr" tvg-logo="https://feo.kablowebtv.com/resize/168A635D265A4328C2883FB4CD8FF/0/0/Vod/HLS/aaac1290-6d58-4036-b106-a7026a4c1bfc.png"  ,Discovery B
-https://proud-river-e20b.pantonum1.workers.dev/discovery.m3u8
+https://kool.ws/kool-iptv/play/3079995901347079e2f045
 #EXTINF:-1 group-title="BELGESEL" tvg-id="DISCOVERY CHANNEL c.tr" tvg-logo="https://feo.kablowebtv.com/resize/168A635D265A4328C2883FB4CD8FF/0/0/Vod/HLS/aaac1290-6d58-4036-b106-a7026a4c1bfc.png"  ,Discovery c
 https://65.108.239.207/discovery/index.m3u8
 #EXTVLCOPT:http-user-agent=VAVOO/2.6
