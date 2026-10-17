@@ -1,4 +1,137 @@
 #EXTM3U
+#EXTINF:-1 tvg-logo="https://tvdiziler.tv/uploads/series/thumb/annem-ankara.jpg" group-title="Yerli - Annem Ankara", Annem Ankara Son Bölüm
+#EXTVLCOPT:http-referrer=https://tvdiziler.tv
+http://45.159.95.10:8880/STORE/DIZI.SON.BOLUMLER/Annem.Ankara.SON.mkv
+
+#EXTINF:-1 tvg-logo="https://tvdiziler.tv/uploads/series/thumb/arka-sokaklar.jpg" group-title="Yerli - Arka Sokaklar", Arka Sokaklar Son Bölüm
+#EXTVLCOPT:http-referrer=https://tvdiziler.tv
+http://45.159.95.10:8880/STORE/DIZI.SON.BOLUMLER/Arka.Sokaklar.SON.mkv
+
+#EXTINF:-1 tvg-logo="https://tvdiziler.tv/uploads/series/thumb/ask-evlilik-bosanma.jpg" group-title="Yerli - Aşk Evlilik Boşanma", Aşk Evlilik Boşanma Son Bölüm
+#EXTVLCOPT:http-referrer=https://tvdiziler.tv
+http://45.159.95.10:8880/STORE/DIZI.SON.BOLUMLER/Ask.Evlilik.Bosanma.SON.mkv
+
+#EXTINF:-1 tvg-logo="https://tvdiziler.tv/uploads/series/thumb/ask-ve-gozyasi.jpg" group-title="Yerli - Aşk Ve Gözyaşı", Aşk Ve Gözyaşı Son Bölüm
+#EXTVLCOPT:http-referrer=https://tvdiziler.tv
+http://45.159.95.10:8880/STORE/DIZI.SON.BOLUMLER/Ask.Ve.Gozyasi.SON.mkv
+
+#EXTINF:-1 tvg-logo="https://tvdiziler.tv/uploads/series/thumb/aynadaki-yabanci.jpg" group-title="Yerli - Aynadaki Yabancı", Aynadaki Yabancı Son Bölüm
+#EXTVLCOPT:http-referrer=https://tvdiziler.tv
+http://45.159.95.10:8880/STORE/DIZI.SON.BOLUMLER/Aynadaki.Yabanci.SON.mkv
+
+#EXTINF:-1 tvg-logo="https://tvdiziler.tv/uploads/series/thumb/bahar.jpg" group-title="Yerli - Bahar", Bahar Son Bölüm
+#EXTVLCOPT:http-referrer=https://tvdiziler.tv
+http://45.159.95.10:8880/STORE/DIZI.SON.BOLUMLER/Bahar.SON.mkv
+
+#EXTINF:-1 tvg-logo="https://tvdiziler.tv/uploads/series/thumb/baska-bir-gun.jpg" group-title="Yerli - Başka Bir Gün", Başka Bir Gün Son Bölüm
+#EXTVLCOPT:http-referrer=https://tvdiziler.tv
+http://45.159.95.10:8880/STORE/DIZI.SON.BOLUMLER/Baska.Bir.Gun.SON.mkv
+
+#EXTINF:-1 tvg-logo="https://tvdiziler.tv/uploads/series/thumb/ben-leman.jpg" group-title="Yerli - Ben Leman", Ben Leman Son Bölüm
+#EXTVLCOPT:http-referrer=https://tvdiziler.tv
+http://45.159.95.10:8880/STORE/DIZI.SON.BOLUMLER/Ben.Leman.SON.mkv
+
+#EXTINF:-1 tvg-logo="https://tvdiziler.tv/uploads/series/thumb/ben-onun-annesiyim.jpg" group-title="Yerli - Ben Onun Annesiyim", Ben Onun Annesiyim Son Bölüm
+#EXTVLCOPT:http-referrer=https://tvdiziler.tv
+http://45.159.95.10:8880/STORE/DIZI.SON.BOLUMLER/Ben.Onun.Annesiyim.SON.mkv
+
+#EXTINF:-1 tvg-logo="https://tvdiziler.tv/uploads/series/thumb/bereketli-topraklar.jpg" group-title="Yerli - Bereketli Topraklar", Bereketli Topraklar Son Bölüm
+#EXTVLCOPT:http-referrer=https://tvdiziler.tv
+http://45.159.95.10:8880/STORE/DIZI.SON.BOLUMLER/Bereketli.Topraklar.SON.mkv
+
+#EXTINF:-1 tvg-logo="https://tvdiziler.tv/uploads/series/thumb/bir-gece-masali.jpg" group-title="Yerli - Bir Gece Masalı", Bir Gece Masalı Son Bölüm
+#EXTVLCOPT:http-referrer=https://tvdiziler.tv
+http://45.159.95.10:8880/STORE/DIZI.SON.BOLUMLER/Bir.Gece.Masali.SON.mkv
+
+#EXTINF:-1 tvg-logo="https://tvdiziler.tv/uploads/series/thumb/bir-zamanlar-istanbul.jpg" group-title="Yerli - Bir Zamanlar Istanbul", Bir Zamanlar Istanbul Son Bölüm
+#EXTVLCOPT:http-referrer=https://tvdiziler.tv
+http://45.159.95.10:8880/STORE/DIZI.SON.BOLUMLER/Bir.Zamanlar.Istanbul.SON.mkv
+
+#EXTINF:-1 tvg-logo="https://tvdiziler.tv/uploads/series/thumb/can-borcu.jpg" group-title="Yerli - Can Borcu", Can Borcu Son Bölüm
+#EXTVLCOPT:http-referrer=https://tvdiziler.tv
+http://45.159.95.10:8880/STORE/DIZI.SON.BOLUMLER/Can.Borcu.SON.mkv
+
+#EXTINF:-1 tvg-logo="https://tvdiziler.tv/uploads/series/thumb/carpinti.jpg" group-title="Yerli - Çarpıntı", Çarpıntı Son Bölüm
+#EXTVLCOPT:http-referrer=https://tvdiziler.tv
+http://45.159.95.10:8880/STORE/DIZI.SON.BOLUMLER/Carpinti.SON.mkv
+
+#EXTINF:-1 tvg-logo="https://tvdiziler.tv/uploads/series/thumb/cennetin-cocuklari.jpg" group-title="Yerli - Cennetin Çocukları", Cennetin Çocukları Son Bölüm
+#EXTVLCOPT:http-referrer=https://tvdiziler.tv
+http://45.159.95.10:8880/STORE/DIZI.SON.BOLUMLER/Cennetin.Cocuklari.SON.mkv
+
+#EXTINF:-1 tvg-logo="https://tvdiziler.tv/uploads/series/thumb/cift-kisilik-oda.jpg" group-title="Yerli - Çift Kişilik Oda", Çift Kişilik Oda Son Bölüm
+#EXTVLCOPT:http-referrer=https://tvdiziler.tv
+http://45.159.95.10:8880/STORE/DIZI.SON.BOLUMLER/Cift.Kisilik.Oda.SON.mkv
+
+#EXTINF:-1 tvg-logo="https://tvdiziler.tv/uploads/series/thumb/cok-guzel-hareketler.jpg" group-title="Yerli - Çok Güzel Hareketler", Çok Güzel Hareketler Son Bölüm
+#EXTVLCOPT:http-referrer=https://tvdiziler.tv
+http://45.159.95.10:8880/STORE/DIZI.SON.BOLUMLER/Cok.Guzel.Hareketler.SON.mkv
+
+#EXTINF:-1 tvg-logo="https://tvdiziler.tv/uploads/series/thumb/deha.jpg" group-title="Yerli - Deha", Deha Son Bölüm
+#EXTVLCOPT:http-referrer=https://tvdiziler.tv
+http://45.159.95.10:8880/STORE/DIZI.SON.BOLUMLER/Deha.SON.mkv
+
+#EXTINF:-1 tvg-logo="https://tvdiziler.tv/uploads/series/thumb/esref-ruya.jpg" group-title="Yerli - Esref Rüya", Esref Rüya Son Bölüm
+#EXTVLCOPT:http-referrer=https://tvdiziler.tv
+http://45.159.95.10:8880/STORE/DIZI.SON.BOLUMLER/Esref.Ruya.SON.mkv
+
+#EXTINF:-1 tvg-logo="https://tvdiziler.tv/uploads/series/thumb/gizli-bahce.jpg" group-title="Yerli - Gizli Bahçe", Gizli Bahçe Son Bölüm
+#EXTVLCOPT:http-referrer=https://tvdiziler.tv
+http://45.159.95.10:8880/STORE/DIZI.SON.BOLUMLER/Gizli.Bahce.SON.mkv
+
+#EXTINF:-1 tvg-logo="https://tvdiziler.tv/uploads/series/thumb/gonul-dagi.jpg" group-title="Yerli - Gönül Dağı", Gönül Dağı Son Bölüm
+#EXTVLCOPT:http-referrer=https://tvdiziler.tv
+http://45.159.95.10:8880/STORE/DIZI.SON.BOLUMLER/Gonul.Dagi.SON.mkv
+
+#EXTINF:-1 tvg-logo="https://tvdiziler.tv/uploads/series/thumb/gozleri-karadeniz.jpg" group-title="Yerli - Gözleri Karadeniz", Gözleri Karadeniz Son Bölüm
+#EXTVLCOPT:http-referrer=https://tvdiziler.tv
+http://45.159.95.10:8880/STORE/DIZI.SON.BOLUMLER/Gozleri.KaraDeniz.SON.mkv
+
+#EXTINF:-1 tvg-logo="https://tvdiziler.tv/uploads/series/thumb/guldur-guldur.jpg" group-title="Yerli - Güldür Güldür", Güldür Güldür Son Bölüm
+#EXTVLCOPT:http-referrer=https://tvdiziler.tv
+http://45.159.95.10:8880/STORE/DIZI.SON.BOLUMLER/Guldur.Guldur.Show.SON.mkv
+
+#EXTINF:-1 tvg-logo="https://tvdiziler.tv/uploads/series/thumb/guller-ve-gunahlar.jpg" group-title="Yerli - Güller Ve Günahlar", Güller Ve Günahlar Son Bölüm
+#EXTVLCOPT:http-referrer=https://tvdiziler.tv
+http://45.159.95.10:8880/STORE/DIZI.SON.BOLUMLER/Guller.ve.Gunahlar.SON.mkv
+
+#EXTINF:-1 tvg-logo="https://tvdiziler.tv/uploads/series/thumb/guzel-asklar-diyari.jpg" group-title="Yerli - Güzel Aşklar Diyarı", Güzel Aşklar Diyarı Son Bölüm
+#EXTVLCOPT:http-referrer=https://tvdiziler.tv
+http://45.159.95.10:8880/STORE/DIZI.SON.BOLUMLER/Guzel.Asklar.Diyari.SON.mkv
+
+#EXTINF:-1 tvg-logo="https://tvdiziler.tv/uploads/series/thumb/halef.jpg" group-title="Yerli - Halef", Halef Son Bölüm
+#EXTVLCOPT:http-referrer=https://tvdiziler.tv
+http://45.159.95.10:8880/STORE/DIZI.SON.BOLUMLER/Halef.SON.mkv
+
+#EXTINF:-1 tvg-logo="https://tvdiziler.tv/uploads/series/thumb/holding.jpg" group-title="Yerli - Holding", Holding Son Bölüm
+#EXTVLCOPT:http-referrer=https://tvdiziler.tv
+http://45.159.95.10:8880/STORE/DIZI.SON.BOLUMLER/Holding.SON.mkv
+
+#EXTINF:-1 tvg-logo="https://tvdiziler.tv/uploads/series/thumb/hudutsuz-sevda.jpg" group-title="Yerli - Hudutsuz Sevda", Hudutsuz Sevda Son Bölüm
+#EXTVLCOPT:http-referrer=https://tvdiziler.tv
+http://45.159.95.10:8880/STORE/DIZI.SON.BOLUMLER/Hudutsuz.Sevda.SON.mkv
+
+#EXTINF:-1 tvg-logo="https://tvdiziler.tv/uploads/series/thumb/inci-taneleri.jpg" group-title="Yerli - Inci Taneleri", Inci Taneleri Son Bölüm
+#EXTVLCOPT:http-referrer=https://tvdiziler.tv
+http://45.159.95.10:8880/STORE/DIZI.SON.BOLUMLER/Inci.Taneleri.SON.mkv
+
+#EXTINF:-1 tvg-logo="https://tvdiziler.tv/uploads/series/thumb/kalpazan.jpg" group-title="Yerli - Kalpazan", Kalpazan Son Bölüm
+#EXTVLCOPT:http-referrer=https://tvdiziler.tv
+http://45.159.95.10:8880/STORE/DIZI.SON.BOLUMLER/Kalpazan.SON.mkv
+
+#EXTINF:-1 tvg-logo="https://tvdiziler.tv/uploads/series/thumb/kara-agac-destani.jpg" group-title="Yerli - Kara Ağaç Destanı", Kara Ağaç Destanı Son Bölüm
+#EXTVLCOPT:http-referrer=https://tvdiziler.tv
+http://45.159.95.10:8880/STORE/DIZI.SON.BOLUMLER/Kara.Agac.Destani.SON.mkv
+
+#EXTINF:-1 tvg-logo="https://tvdiziler.tv/uploads/series/thumb/karadut.jpg" group-title="Yerli - Karadut", Karadut Son Bölüm
+#EXTVLCOPT:http-referrer=https://tvdiziler.tv
+http://45.159.95.10:8880/STORE/DIZI.SON.BOLUMLER/Karadut.SON.mkv
+
+#EXTINF:-1 tvg-logo="https://tvdiziler.tv/uploads/series/thumb/kardelenler.jpg" group-title="Yerli - Kardelenler", Kardelenler Son Bölüm
+#EXTVLCOPT:http-referrer=https://tvdiziler.tv
+http://45.159.95.10:8880/STORE/DIZI.SON.BOLUMLER/Kardelenler.SON.mkv
+
+#EXTINF:-1 tvg-logo="https://tvdiziler.tv/uploads/series/thumb/kirli-sepeti.jpg" group-title="Yerli
 #EXTINF:-1 tvg-logo="https://i.hizliresim.com/122o614.jpg" group-title="Yerli - Gönül Dağı", Gönül Dağı 216
 #EXTVLCOPT:http-referrer=https://www.ddizi.im
 #EXTVLCOPT:http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36
