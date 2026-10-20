@@ -5,9 +5,9 @@ import requests
 BASE_DOMAIN_PREFIX = "https://andro.evrenesoglu"
 BASE_DOMAIN_SUFFIX = ".click"
 
-# Başlangıç indeksi (Gelecekte engellendikçe 102, 103, 104... diye otomatik artar)
-START_INDEX = 101
-MAX_TRY_COUNT = 50  
+# Güncel çalışan bilinen adresten başlatıyoruz (157, 158, 159...)
+START_INDEX = 157
+MAX_TRY_COUNT = 30  
 
 OUTPUT_FILE = "kanallar_andro.m3u8"
 BEIN_LOGO = "https://resmim.net/cdn/2026/07/22/ETtrXH.png"
@@ -58,31 +58,20 @@ CHANNELS = [
 ]
 
 def get_active_andro_url():
-    """Sırayla 101, 102... dener. Yönlendirmelere bakmaksızın çalışan ilk sayacın adresini doğrudan döndürür."""
+    """157'den başlayarak sırayla aktif olan adresi bulur."""
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36'
     }
-    
-    session = requests.Session()
-    
     for i in range(START_INDEX, START_INDEX + MAX_TRY_COUNT):
         test_url = f"{BASE_DOMAIN_PREFIX}{i}{BASE_DOMAIN_SUFFIX}"
         try:
-            # allow_redirects=False sayesinde yönlendirilen siteye bakılmaz
-            res = session.head(test_url, headers=headers, timeout=3, allow_redirects=False)
-            if res.status_code in [200, 301, 302, 307, 308]:
-                print(f"[+] Bulunan Aktif Sayaç Adresi: {test_url}")
-                return test_url
+            res = requests.get(test_url, headers=headers, timeout=4, allow_redirects=True)
+            if res.status_code == 200:
+                final_url = res.url.rstrip('/')
+                print(f"[+] Aktif Andro Adresi Bulundu: {final_url}")
+                return final_url
         except Exception:
-            try:
-                # HEAD isteği engellenirse GET ile dene
-                res = session.get(test_url, headers=headers, timeout=3, allow_redirects=False)
-                if res.status_code in [200, 301, 302, 307, 308]:
-                    print(f"[+] Bulunan Aktif Sayaç Adresi: {test_url}")
-                    return test_url
-            except Exception:
-                continue
-                
+            continue
     return f"{BASE_DOMAIN_PREFIX}{START_INDEX}{BASE_DOMAIN_SUFFIX}"
 
 def build_m3u():
