@@ -20,8 +20,8 @@ CHANNELS = [
     {"name": "BeIN Sports 3", "logo": BEIN_LOGO, "group": "BeinSports", "path": "checklist/androstreamlivebs3.m3u8"},
     {"name": "BeIN Sports 4", "logo": BEIN_LOGO, "group": "BeinSports", "path": "checklist/androstreamlivebs4.m3u8"},
     {"name": "BeIN Sports 5", "logo": BEIN_LOGO, "group": "BeinSports", "path": "checklist/androstreamlivebs5.m3u8"},
-    {"name": "BeIN Sports 1 Max", "logo": BEIN_LOGO, "group": "BeinSports", "path": "checklist/androstreamlivebm1.m3u8"},
-    {"name": "BeIN Sports 2 Max", "logo": BEIN_LOGO, "group": "BeinSports", "path": "checklist/androstreamlivebm2.m3u8"},
+    {"name": "BeIN Sports 1 Max", "logo": BEIN_LOGO, "group": "BeinSports", "path": "androstreamlivebsm1.m3u8"},
+    {"name": "BeIN Sports 2 Max", "logo": BEIN_LOGO, "group": "BeinSports", "path": "androstreamlivebsm1.m3u8"},
     
     # Exxen
     {"name": "Exxen Sports 1", "logo": "", "group": "Exxen", "path": "checklist/androstreamliveex1.m3u8"},
@@ -30,32 +30,32 @@ CHANNELS = [
     {"name": "Exxen Sports 4", "logo": "", "group": "Exxen", "path": "checklist/androstreamliveex4.m3u8"},
     
     # S Sports
-    {"name": "S Sports 1", "logo": "", "group": "S Sports", "path": "checklist/androstreams1.m3u8"},
-    {"name": "S Sports 2", "logo": "", "group": "S Sports", "path": "checklist/androstreams2.m3u8"},
+    {"name": "S Sports 1", "logo": "", "group": "S Sports", "path": "androstreamlivess1.m3u8"},
+    {"name": "S Sports 2", "logo": "", "group": "S Sports", "path": "androstreamlivess1.m3u8"},
     
     # Tivibu
     {"name": "Tivibu Sports", "logo": "", "group": "Tivibu", "path": "checklist/androstreamt1.m3u8"},
-    {"name": "Tivibu Sports 2", "logo": "", "group": "Tivibu", "path": "checklist/androstreamt2.m3u8"},
-    {"name": "Tivibu Sports 3", "logo": "", "group": "Tivibu", "path": "checklist/androstreamt3.m3u8"},
-    {"name": "Tivibu Sports 4", "logo": "", "group": "Tivibu", "path": "checklist/androstreamt4.m3u8"},
+    {"name": "Tivibu Sports 2", "logo": "", "group": "Tivibu", "path": "androstreamt2.m3u8"},
+    {"name": "Tivibu Sports 3", "logo": "", "group": "Tivibu", "path": "androstreamt3.m3u8"},
+    {"name": "Tivibu Sports 4", "logo": "", "group": "Tivibu", "path": "androstreamt4.m3u8"},
     
     # Spor
-    {"name": "Smart Spor", "logo": "", "group": "Smart Sports", "path": "checklist/androstreamsmarts.m3u8"},
-    {"name": "Smart Spor 2", "logo": "", "group": "Smart Sports", "path": "checklist/androstreamsms2.m3u8"},
-    {"name": "TRT Spor", "logo": "", "group": "TRT", "path": "checklist/androstreamtrtspor.m3u8"},
-    {"name": "TRT Spor Yıldız", "logo": "", "group": "TRT", "path": "checklist/androstreamtrtspor2.m3u8"},
-    {"name": "NBA TV", "logo": "", "group": "NBA", "path": "checklist/androstreamnbatv.m3u8"},
-    {"name": "Eurosport 1", "logo": "", "group": "Eurosport", "path": "checklist/androstreameu1.m3u8"},
-    {"name": "Eurosport 2", "logo": "", "group": "Eurosport", "path": "checklist/androstreameu2.m3u8"},
+    {"name": "Smart Spor", "logo": "", "group": "Smart Sports", "path": "androstreamsmarts.m3u8"},
+    {"name": "Smart Spor 2", "logo": "", "group": "Smart Sports", "path": "androstreamsms2.m3u8"},
+    {"name": "TRT Spor", "logo": "", "group": "TRT", "path": "androstreamtrtspor.m3u8"},
+    {"name": "TRT Spor Yıldız", "logo": "", "group": "TRT", "path": "androstreamtrtspor2.m3u8"},
+    {"name": "NBA TV", "logo": "", "group": "NBA", "path": "androstreamnbatv.m3u8"},
+    {"name": "Eurosport 1", "logo": "", "group": "Eurosport", "path": "androstreameu1.m3u8"},
+    {"name": "Eurosport 2", "logo": "", "group": "Eurosport", "path": "androstreameu2.m3u8"},
     
     # Ulusal / Diğer
-    {"name": "A Spor", "logo": "", "group": "Ulusal", "path": "checklist/androstreamas.m3u8"},
-    {"name": "ATV", "logo": "", "group": "Ulusal", "path": "checklist/androstreamatv.m3u8"},
-    {"name": "TV8", "logo": "", "group": "Ulusal", "path": "checklist/androstreamtv8.m3u8"},
-    {"name": "TV8.5", "logo": "", "group": "Ulusal", "path": "checklist/androstreamtv85.m3u8"},
-    {"name": "FB TV", "logo": "", "group": "Diğer", "path": "checklist/androstreamfbtv.m3u8"},
-    {"name": "GS TV", "logo": "", "group": "Diğer", "path": "checklist/androstreamgstv.m3u8"},
-    {"name": "TJK TV", "logo": "", "group": "Yarış", "path": "checklist/androstreamtjktv.m3u8"},
+    {"name": "A Spor", "logo": "", "group": "Ulusal", "path": "androstreamas.m3u8"},
+    {"name": "ATV", "logo": "", "group": "Ulusal", "path": "androstreamatv.m3u8"},
+    {"name": "TV8", "logo": "", "group": "Ulusal", "path": "androstreamtv8.m3u8"},
+    {"name": "TV8.5", "logo": "", "group": "Ulusal", "path": "androstreamtv85.m3u8"},
+    {"name": "FB TV", "logo": "", "group": "Diğer", "path": "androstreamfbtv.m3u8"},
+    {"name": "GS TV", "logo": "", "group": "Diğer", "path": "androstreamgstv.m3u8"},
+    {"name": "TJK TV", "logo": "", "group": "Yarış", "path": "androstreamtjktv.m3u8"},
 ]
 
 def get_active_base_url():
