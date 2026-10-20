@@ -1,69 +1,69 @@
 #EXTM3U
 #EXTVLCOPT:http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36
-#EXTVLCOPT:http-referrer=https://andro.evrenesoglu101101.click/
+#EXTVLCOPT:http-referrer=https://andro.evrenesoglu157.click/
 #EXT-X-USER-AGENT:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36
-#EXT-X-REFERER:https://andro.evrenesoglu101101.click/
-#EXT-X-ORIGIN:https://andro.evrenesoglu101101.click
+#EXT-X-REFERER:https://andro.evrenesoglu157.click/
+#EXT-X-ORIGIN:https://andro.evrenesoglu157.click
 
 #EXTINF:-1 tvg-name="BeIN Sports 1" tvg-logo="https://resmim.net/cdn/2026/07/22/ETtrXH.png" group-title="BeinSports",BeIN Sports 1
-https://andro.evrenesoglu101101.click/checklist/batutest.m3u8
+https://andro.evrenesoglu157.click/checklist/batutest.m3u8
 #EXTINF:-1 tvg-name="BeIN Sports 2" tvg-logo="https://resmim.net/cdn/2026/07/22/ETtrXH.png" group-title="BeinSports",BeIN Sports 2
-https://andro.evrenesoglu101101.click/checklist/androstreamlivebs2.m3u8
+https://andro.evrenesoglu157.clickchecklist/androstreamlivebs2.m3u8
 #EXTINF:-1 tvg-name="BeIN Sports 3" tvg-logo="https://resmim.net/cdn/2026/07/22/ETtrXH.png" group-title="BeinSports",BeIN Sports 3
-https://andro.evrenesoglu101101.click/checklist/androstreamlivebs3.m3u8
+https://andro.evrenesoglu157.clickchecklist/androstreamlivebs3.m3u8
 #EXTINF:-1 tvg-name="BeIN Sports 4" tvg-logo="https://resmim.net/cdn/2026/07/22/ETtrXH.png" group-title="BeinSports",BeIN Sports 4
-https://andro.evrenesoglu101101.click/checklist/androstreamlivebs4.m3u8
+https://andro.evrenesoglu157.clickchecklist/androstreamlivebs4.m3u8
 #EXTINF:-1 tvg-name="BeIN Sports 5" tvg-logo="https://resmim.net/cdn/2026/07/22/ETtrXH.png" group-title="BeinSports",BeIN Sports 5
-https://andro.evrenesoglu101101.click/checklist/androstreamlivebs5.m3u8
+https://andro.evrenesoglu157.clickchecklist/androstreamlivebs5.m3u8
 #EXTINF:-1 tvg-name="BeIN Sports 1 Max" tvg-logo="https://resmim.net/cdn/2026/07/22/ETtrXH.png" group-title="BeinSports",BeIN Sports 1 Max
-https://andro.evrenesoglu101101.click/androstreamlivebsm1.m3u8
+https://andro.evrenesoglu157.clickandrostreamlivebsm1.m3u8
 #EXTINF:-1 tvg-name="BeIN Sports 2 Max" tvg-logo="https://resmim.net/cdn/2026/07/22/ETtrXH.png" group-title="BeinSports",BeIN Sports 2 Max
-https://andro.evrenesoglu101101.click/androstreamlivebsm1.m3u8
+https://andro.evrenesoglu157.clickandrostreamlivebsm1.m3u8
 #EXTINF:-1 tvg-name="Exxen Sports 1" tvg-logo="" group-title="Exxen",Exxen Sports 1
-https://andro.evrenesoglu101101.click/checklist/androstreamliveex1.m3u8
+https://andro.evrenesoglu157.clickchecklist/androstreamliveex1.m3u8
 #EXTINF:-1 tvg-name="Exxen Sports 2" tvg-logo="" group-title="Exxen",Exxen Sports 2
-https://andro.evrenesoglu101101.click/checklist/androstreamliveex2.m3u8
+https://andro.evrenesoglu157.clickchecklist/androstreamliveex2.m3u8
 #EXTINF:-1 tvg-name="Exxen Sports 3" tvg-logo="" group-title="Exxen",Exxen Sports 3
-https://andro.evrenesoglu101101.click/checklist/androstreamliveex3.m3u8
+https://andro.evrenesoglu157.clickchecklist/androstreamliveex3.m3u8
 #EXTINF:-1 tvg-name="Exxen Sports 4" tvg-logo="" group-title="Exxen",Exxen Sports 4
-https://andro.evrenesoglu101101.click/checklist/androstreamliveex4.m3u8
+https://andro.evrenesoglu157.clickchecklist/androstreamliveex4.m3u8
 #EXTINF:-1 tvg-name="S Sports 1" tvg-logo="" group-title="S Sports",S Sports 1
-https://andro.evrenesoglu101101.click/checklist/androstreamlivess1.m3u8
+https://andro.evrenesoglu157.clickchecklist/androstreamlivess1.m3u8
 #EXTINF:-1 tvg-name="S Sports 2" tvg-logo="" group-title="S Sports",S Sports 2
-https://andro.evrenesoglu101101.click/checklist/androstreamlivess1.m3u8
+https://andro.evrenesoglu157.clickchecklist/androstreamlivess1.m3u8
 #EXTINF:-1 tvg-name="Tivibu Sports" tvg-logo="" group-title="Tivibu",Tivibu Sports
-https://andro.evrenesoglu101101.click/checklist/androstreamt1.m3u8
+https://andro.evrenesoglu157.clickchecklist/androstreamt1.m3u8
 #EXTINF:-1 tvg-name="Tivibu Sports 2" tvg-logo="" group-title="Tivibu",Tivibu Sports 2
-https://andro.evrenesoglu101101.click/checklist/androstreamt2.m3u8
+https://andro.evrenesoglu157.clickchecklist/androstreamt2.m3u8
 #EXTINF:-1 tvg-name="Tivibu Sports 3" tvg-logo="" group-title="Tivibu",Tivibu Sports 3
-https://andro.evrenesoglu101101.click/checklist/androstreamt3.m3u8
+https://andro.evrenesoglu157.clickchecklist/androstreamt3.m3u8
 #EXTINF:-1 tvg-name="Tivibu Sports 4" tvg-logo="" group-title="Tivibu",Tivibu Sports 4
-https://andro.evrenesoglu101101.click/checklist/androstreamt4.m3u8
+https://andro.evrenesoglu157.clickchecklist/androstreamt4.m3u8
 #EXTINF:-1 tvg-name="Smart Spor" tvg-logo="" group-title="Smart Sports",Smart Spor
-https://andro.evrenesoglu101101.click/checklist/androstreamsmarts.m3u8
+https://andro.evrenesoglu157.clickchecklist/androstreamsmarts.m3u8
 #EXTINF:-1 tvg-name="Smart Spor 2" tvg-logo="" group-title="Smart Sports",Smart Spor 2
-https://andro.evrenesoglu101101.click/checklist/androstreamsms2.m3u8
+https://andro.evrenesoglu157.clickchecklist/androstreamsms2.m3u8
 #EXTINF:-1 tvg-name="TRT Spor" tvg-logo="" group-title="TRT",TRT Spor
-https://andro.evrenesoglu101101.click/checklist/androstreamtrtspor.m3u8
+https://andro.evrenesoglu157.clickchecklist/androstreamtrtspor.m3u8
 #EXTINF:-1 tvg-name="TRT Spor Yıldız" tvg-logo="" group-title="TRT",TRT Spor Yıldız
-https://andro.evrenesoglu101101.click/checklist/androstreamtrtspor2.m3u8
+https://andro.evrenesoglu157.clickchecklist/androstreamtrtspor2.m3u8
 #EXTINF:-1 tvg-name="NBA TV" tvg-logo="" group-title="NBA",NBA TV
-https://andro.evrenesoglu101101.click/androstreamnbatv.m3u8
+https://andro.evrenesoglu157.clickandrostreamnbatv.m3u8
 #EXTINF:-1 tvg-name="Eurosport 1" tvg-logo="" group-title="Eurosport",Eurosport 1
-https://andro.evrenesoglu101101.click/androstreameu1.m3u8
+https://andro.evrenesoglu157.clickandrostreameu1.m3u8
 #EXTINF:-1 tvg-name="Eurosport 2" tvg-logo="" group-title="Eurosport",Eurosport 2
-https://andro.evrenesoglu101101.click/androstreameu2.m3u8
+https://andro.evrenesoglu157.clickandrostreameu2.m3u8
 #EXTINF:-1 tvg-name="A Spor" tvg-logo="" group-title="Ulusal",A Spor
-https://andro.evrenesoglu101101.click/checklist/androstreamas.m3u8
+https://andro.evrenesoglu157.clickchecklist/androstreamas.m3u8
 #EXTINF:-1 tvg-name="ATV" tvg-logo="" group-title="Ulusal",ATV
-https://andro.evrenesoglu101101.click/checklist/androstreamatv.m3u8
+https://andro.evrenesoglu157.clickchecklist/androstreamatv.m3u8
 #EXTINF:-1 tvg-name="TV8" tvg-logo="" group-title="Ulusal",TV8
-https://andro.evrenesoglu101101.click/checklist/androstreamtv8.m3u8
+https://andro.evrenesoglu157.clickchecklist/androstreamtv8.m3u8
 #EXTINF:-1 tvg-name="TV8.5" tvg-logo="" group-title="Ulusal",TV8.5
-https://andro.evrenesoglu101101.click/checklist/androstreamtv85.m3u8
+https://andro.evrenesoglu157.clickchecklist/androstreamtv85.m3u8
 #EXTINF:-1 tvg-name="FB TV" tvg-logo="" group-title="Diğer",FB TV
-https://andro.evrenesoglu101101.click/checklist/androstreamfbtv.m3u8
+https://andro.evrenesoglu157.clickchecklist/androstreamfbtv.m3u8
 #EXTINF:-1 tvg-name="GS TV" tvg-logo="" group-title="Diğer",GS TV
-https://andro.evrenesoglu101101.click/checklist/androstreamgstv.m3u8
+https://andro.evrenesoglu157.clickchecklist/androstreamgstv.m3u8
 #EXTINF:-1 tvg-name="TJK TV" tvg-logo="" group-title="Yarış",TJK TV
-https://andro.evrenesoglu101101.click/checklist/androstreamtjktv.m3u8
+https://andro.evrenesoglu157.clickchecklist/androstreamtjktv.m3u8
