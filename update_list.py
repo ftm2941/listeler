@@ -5,7 +5,7 @@ from playwright.sync_api import sync_playwright
 
 # Başlangıç domain mantığı (Adres engellendikçe sayaç otomatik artar)
 BASE_DOMAIN_PREFIX = "https://taraftarium"
-BASE_DOMAIN_SUFFIX = ".io"
+BASE_DOMAIN_SUFFIX = ".xyz"
 
 # Aranacak sayaç aralığı (En son bilinen adresten ileriye doğru sıralı dener)
 START_INDEX = 1081
