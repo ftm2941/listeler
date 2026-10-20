@@ -8,7 +8,7 @@ BASE_DOMAIN_SUFFIX = ".click"
 START_INDEX = 157
 MAX_TRY_COUNT = 30  
 
-OUTPUT_FILE = "kanallar_andro.m3u8"
+OUTPUT_FILE = "kanallar.m3u8"
 BEIN_LOGO = "https://resmim.net/cdn/2026/07/22/ETtrXH.png"
 
 CHANNELS = [
