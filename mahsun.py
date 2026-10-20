@@ -5,7 +5,7 @@ import requests
 BASE_DOMAIN_PREFIX = "https://andro.evrenesoglu"
 BASE_DOMAIN_SUFFIX = ".click"
 
-# Doğru başlangıç indeksi (Örn: 101 -> 101, 102, 103...)
+# Başlangıç indeksi (101 -> 101, 102, 103...)
 START_INDEX = 101
 MAX_TRY_COUNT = 30  
 
@@ -58,18 +58,20 @@ CHANNELS = [
 ]
 
 def get_active_andro_url():
-    """Andro adresinin güncel sayacını test ederek aktif olanı bulur."""
+    """Yönlendirmelere takılmadan tam olarak test edilen domain adresini döndürür."""
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36'
     }
     for i in range(START_INDEX, START_INDEX + MAX_TRY_COUNT):
         test_url = f"{BASE_DOMAIN_PREFIX}{i}{BASE_DOMAIN_SUFFIX}"
         try:
-            res = requests.get(test_url, headers=headers, timeout=4, allow_redirects=True)
-            if res.status_code == 200:
-                final_url = res.url.rstrip('/')
-                print(f"[+] Aktif Andro Adresi Bulundu: {final_url}")
-                return final_url
+            # allow_redirects=False yapılarak sitenin sizi 101101 adresine atması engellendi
+            res = requests.get(test_url, headers=headers, timeout=4, allow_redirects=False)
+            
+            # 200 (Tam Başarılı) veya 301/302 (Yönlendirme Var Ama Domain Aktif) durumlarını kabul et
+            if res.status_code in [200, 301, 302]:
+                print(f"[+] Aktif Adres Sabitlendi: {test_url}")
+                return test_url
         except Exception:
             continue
     return f"{BASE_DOMAIN_PREFIX}{START_INDEX}{BASE_DOMAIN_SUFFIX}"
