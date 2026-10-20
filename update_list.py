@@ -9,7 +9,7 @@ BASE_DOMAIN_SUFFIX = ".xyz"
 
 # Aranacak sayaç aralığı (En son bilinen adresten ileriye doğru sıralı dener)
 START_INDEX = 1087
-MAX_TRY_COUNT = 30  # Gelecekte 1082, 1083, 1084... değiştikçe otomatik bulur
+MAX_TRY_COUNT = 30  
 
 OUTPUT_FILE = "kanallar.m3u8"
 BEIN_LOGO = "https://resmim.net/cdn/2026/07/22/ETtrXH.png"
@@ -60,7 +60,7 @@ CHANNELS = [
 ]
 
 def get_active_taraftarium_url():
-    """Sırayla taraftarium1081.xyz, taraftarium1082.xyz ... adreslerini kontrol ederek ilk aktif olanı bulur."""
+    """Sırayla taraftarium1087.xyz ... adreslerini kontrol ederek ilk aktif olanı bulur."""
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36'
     }
@@ -77,7 +77,7 @@ def get_active_taraftarium_url():
     return f"{BASE_DOMAIN_PREFIX}{START_INDEX}{BASE_DOMAIN_SUFFIX}"
 
 def extract_cdn_from_player(active_url):
-    """Bulunan aktif adrese Playwright ile bağlanıp arka plandaki yayın CDN adresini yakalar."""
+    """Bulunan aktif adrese Playwright ile bağlanıp GERÇEK yayın CDN adresini yakalar."""
     cdn_domain = None
 
     with sync_playwright() as p:
@@ -89,27 +89,32 @@ def extract_cdn_from_player(active_url):
 
         def handle_request(request):
             nonlocal cdn_domain
+            # Eğer daha önce doğru yayın adresini bulduysak tekrar değiştirme (reklamlara takılmasın)
+            if cdn_domain:
+                return
+
             url = request.url
-            # Akış yapan m3u8 veya sunucu domainlerini (cfd, xyz, online, site vb.) yakala
-            if "mono.m3u8" in url or "/patron/" in url or re.search(r'https?://[a-zA-Z0-9\.\-]+\.(?:cfd|xyz|online|site|tech|cloud|click)/', url):
-                match = re.search(r'(https?://[a-zA-Z0-9\.\-]+\.(?:cfd|xyz|online|site|tech|cloud|click))', url)
+            # YALNIZCA gerçek yayın m3u8 uzantısı veya patron akış isteği geldiğinde yakala
+            if "mono.m3u8" in url or "/patron/" in url:
+                match = re.search(r'(https?://[a-zA-Z0-9\.\-]+)', url)
                 if match and "taraftarium" not in match.group(1):
                     cdn_domain = match.group(1)
+                    print(f"[✓] Gerçek Yayın Sunucusu Yakalandı: {cdn_domain}")
 
         page.on("request", handle_request)
 
         try:
             print(f"[+] Playwright ile siteye giriş yapılıyor: {active_url}")
             page.goto(active_url, wait_until="domcontentloaded", timeout=20000)
-            page.wait_for_timeout(4000)
+            
+            # Oynatıcının (player) tetiklenmesi için biraz bekleyelim ve tıklama simülasyonu yapalım
+            page.wait_for_timeout(3000)
+            try:
+                page.click("body", timeout=2000)
+            except:
+                pass
+            page.wait_for_timeout(3000)
 
-            # Çerçevelerdeki (iframe) adresleri tara
-            for frame in page.frames:
-                frame_url = frame.url
-                match = re.search(r'(https?://[a-zA-Z0-9\.\-]+\.(?:cfd|xyz|online|site|tech|cloud|click))', frame_url)
-                if match and "taraftarium" not in match.group(1):
-                    cdn_domain = match.group(1)
-                    break
         except Exception as e:
             print(f"[-] Playwright Hatası: {e}")
         finally:
