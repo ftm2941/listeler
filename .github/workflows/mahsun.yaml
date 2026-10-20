@@ -5,6 +5,10 @@ on:
     - cron: '0 */6 * * *'
   workflow_dispatch:
 
+# Repoya push yapabilmesi için yazma izni veriyoruz
+permissions:
+  contents: write
+
 jobs:
   update-m3u:
     runs-on: ubuntu-latest
@@ -28,10 +32,13 @@ jobs:
         run: |
           python mahsun.py
 
-      - name: Değişiklikleri Kaydet ve Gönder (kanallar2.m3u8)
+      - name: Değişiklikleri Kaydet ve Gönder
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add kanallar2.m3u8
-          git commit -m "Otomatik kanallar2.m3u8 Guncellemesi [skip ci]" || echo "Değişiklik yok"
+          
+          # Oluşan tüm m3u8 dosyalarını ekler (dosya adı ne olursa olsun yakalar)
+          git add *.m3u8
+          
+          git commit -m "Otomatik M3U Guncellemesi [skip ci]" || echo "Değişiklik yok"
           git push
