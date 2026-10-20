@@ -1,5 +1,6 @@
 import re
 import requests
+from urllib.parse import urljoin
 
 BASE_DOMAIN_PREFIX = "https://andro.evrenesoglu"
 BASE_DOMAIN_SUFFIX = ".click"
@@ -65,25 +66,23 @@ def get_active_andro_url():
             res = requests.get(test_url, headers=headers, timeout=4, allow_redirects=True)
             if res.status_code == 200 and len(res.history) == 0:
                 final_url = res.url.rstrip('/')
-                print(f"[+] Doğrudan Aktif ve Yönlendirmesiz Adres Bulundu: {final_url}")
                 return final_url
         except Exception:
             continue
             
-    fallback_url = f"{BASE_DOMAIN_PREFIX}{START_INDEX}{BASE_DOMAIN_SUFFIX}"
-    return fallback_url
+    return f"{BASE_DOMAIN_PREFIX}{START_INDEX}{BASE_DOMAIN_SUFFIX}"
 
 def build_m3u():
-    active_main_url = get_active_andro_url().rstrip('/')
+    active_main_url = get_active_andro_url().rstrip('/') + '/'
     print(f"[✓] Kullanılacak Yayın Sunucusu: {active_main_url}")
 
     m3u_lines = [
         "#EXTM3U",
         "#EXTVLCOPT:http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36",
-        f"#EXTVLCOPT:http-referrer={active_main_url}/",
+        f"#EXTVLCOPT:http-referrer={active_main_url}",
         "#EXT-X-USER-AGENT:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36",
-        f"#EXT-X-REFERER:{active_main_url}/",
-        f"#EXT-X-ORIGIN:{active_main_url}",
+        f"#EXT-X-REFERER:{active_main_url}",
+        f"#EXT-X-ORIGIN:{active_main_url.rstrip('/')}",
         ""
     ]
 
@@ -91,9 +90,8 @@ def build_m3u():
         logo_str = f' tvg-logo="{ch["logo"]}"' if ch["logo"] else ' tvg-logo=""'
         extinf = f'#EXTINF:-1 tvg-name="{ch["name"]}"{logo_str} group-title="{ch["group"]}",{ch["name"]}'
         
-        # Yolun başında / işareti yoksa güvenli olması için araya ekleniyor
-        clean_path = ch['path'].lstrip('/')
-        stream_link = f"{active_main_url}/{clean_path}"
+        # urljoin her zaman doğru slash yapısını garantiler
+        stream_link = urljoin(active_main_url, ch['path'].lstrip('/'))
 
         m3u_lines.append(extinf)
         m3u_lines.append(stream_link)
