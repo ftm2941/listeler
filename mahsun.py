@@ -1,16 +1,15 @@
-import sys
 import re
 import requests
-from playwright.sync_api import sync_playwright
 
-# Ana domain yapısı (Sayı artarak değiştiğinde otomatik yakalar)
-BASE_DOMAIN_PREFIX = "https://andro.evrenesoglu101"
+# Andro sistemine özel domain yapılandırması
+BASE_DOMAIN_PREFIX = "https://andro.evrenesoglu"
 BASE_DOMAIN_SUFFIX = ".click"
 
+# Doğru başlangıç indeksi (Örn: 101 -> 101, 102, 103...)
 START_INDEX = 101
-MAX_TRY_COUNT = 30  # 101, 102, 103... şeklinde ileriye doğru dener
+MAX_TRY_COUNT = 30  
 
-OUTPUT_FILE = "kanallar2.m3u8"
+OUTPUT_FILE = "kanallar_andro.m3u8"
 BEIN_LOGO = "https://resmim.net/cdn/2026/07/22/ETtrXH.png"
 
 CHANNELS = [
@@ -58,8 +57,8 @@ CHANNELS = [
     {"name": "TJK TV", "logo": "", "group": "Yarış", "path": "checklist/androstreamtjktv.m3u8"},
 ]
 
-def get_active_base_url():
-    """Ana adresin değişen numarasını (101, 102...) otomatik tarayarak bulur."""
+def get_active_andro_url():
+    """Andro adresinin güncel sayacını test ederek aktif olanı bulur."""
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36'
     }
@@ -69,76 +68,30 @@ def get_active_base_url():
             res = requests.get(test_url, headers=headers, timeout=4, allow_redirects=True)
             if res.status_code == 200:
                 final_url = res.url.rstrip('/')
-                print(f"[+] Aktif Ana Adres Bulundu: {final_url}")
+                print(f"[+] Aktif Andro Adresi Bulundu: {final_url}")
                 return final_url
         except Exception:
             continue
     return f"{BASE_DOMAIN_PREFIX}{START_INDEX}{BASE_DOMAIN_SUFFIX}"
 
-def extract_cdn_from_player(active_base_url):
-    """Aktif ana adrese bağlanıp arka plandaki gerçek yayın CDN sunucusunu yakalar."""
-    cdn_domain = None
-
-    with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)
-        context = browser.new_context(
-            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"
-        )
-        page = context.new_page()
-
-        def handle_request(request):
-            nonlocal cdn_domain
-            url = request.url
-            if ".m3u8" in url or "/checklist/" in url:
-                match = re.search(r'(https?://[a-zA-Z0-9\.\-]+\.(?:cfd|xyz|online|site|tech|cloud|click))', url)
-                if match and "evrenesoglu" not in match.group(1):
-                    cdn_domain = match.group(1)
-
-        page.on("request", handle_request)
-
-        try:
-            print(f"[+] Playwright ile taranıyor: {active_base_url}")
-            page.goto(active_base_url, wait_until="domcontentloaded", timeout=20000)
-            page.wait_for_timeout(4000)
-
-            if not cdn_domain:
-                for frame in page.frames:
-                    frame_url = frame.url
-                    match = re.search(r'(https?://[a-zA-Z0-9\.\-]+\.(?:cfd|xyz|online|site|tech|cloud|click))', frame_url)
-                    if match and "evrenesoglu" not in match.group(1):
-                        cdn_domain = match.group(1)
-                        break
-        except Exception as e:
-            print(f"[-] Tarama Hatası: {e}")
-        finally:
-            browser.close()
-
-    return cdn_domain
-
 def build_m3u():
-    active_base_url = get_active_base_url()
-    stream_cdn = extract_cdn_from_player(active_base_url)
-
-    if not stream_cdn:
-        print("[!] Canlı CDN yakalanamadı, aktif ana adres baz alınacak.")
-        stream_cdn = active_base_url
-
-    print(f"[✓] Hedef Yayın Sunucusu: {stream_cdn}")
+    active_main_url = get_active_andro_url()
+    print(f"[✓] Kullanılacak Yayın Sunucusu: {active_main_url}")
 
     m3u_lines = [
         "#EXTM3U",
         "#EXTVLCOPT:http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36",
-        f"#EXTVLCOPT:http-referrer={active_base_url}/",
+        f"#EXTVLCOPT:http-referrer={active_main_url}/",
         "#EXT-X-USER-AGENT:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36",
-        f"#EXT-X-REFERER:{active_base_url}/",
-        f"#EXT-X-ORIGIN:{active_base_url}",
+        f"#EXT-X-REFERER:{active_main_url}/",
+        f"#EXT-X-ORIGIN:{active_main_url}",
         ""
     ]
 
     for ch in CHANNELS:
         logo_str = f' tvg-logo="{ch["logo"]}"' if ch["logo"] else ' tvg-logo=""'
         extinf = f'#EXTINF:-1 tvg-name="{ch["name"]}"{logo_str} group-title="{ch["group"]}",{ch["name"]}'
-        stream_link = f"{stream_cdn.rstrip('/')}/{ch['path']}"
+        stream_link = f"{active_main_url.rstrip('/')}/{ch['path']}"
 
         m3u_lines.append(extinf)
         m3u_lines.append(stream_link)
@@ -146,7 +99,7 @@ def build_m3u():
     with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
         f.write("\n".join(m3u_lines) + "\n")
 
-    print(f"[✓] {OUTPUT_FILE} güncel adreslerle başarıyla oluşturuldu.")
+    print(f"[✓] {OUTPUT_FILE} dosyası başarıyla oluşturuldu.")
 
 if __name__ == "__main__":
     build_m3u()
