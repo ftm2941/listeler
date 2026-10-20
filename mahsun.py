@@ -5,7 +5,7 @@ import requests
 BASE_DOMAIN_PREFIX = "https://andro.evrenesoglu"
 BASE_DOMAIN_SUFFIX = ".click"
 
-# Güncel çalışan bilinen adresten başlatıyoruz (157, 158, 159...)
+# Güncel çalışan bilinen adres
 START_INDEX = 157
 MAX_TRY_COUNT = 30  
 
@@ -58,20 +58,23 @@ CHANNELS = [
 ]
 
 def get_active_andro_url():
-    """157'den başlayarak sırayla aktif olan adresi bulur."""
+    """Yönlendirmeleri takip etmeden test edilen domaini doğrudan yakalar."""
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36'
     }
     for i in range(START_INDEX, START_INDEX + MAX_TRY_COUNT):
         test_url = f"{BASE_DOMAIN_PREFIX}{i}{BASE_DOMAIN_SUFFIX}"
         try:
-            res = requests.get(test_url, headers=headers, timeout=4, allow_redirects=True)
-            if res.status_code == 200:
-                final_url = res.url.rstrip('/')
-                print(f"[+] Aktif Andro Adresi Bulundu: {final_url}")
-                return final_url
+            # allow_redirects=False ile sitenin başka adrese atması engelleniyor
+            res = requests.get(test_url, headers=headers, timeout=4, allow_redirects=False)
+            
+            # 200 veya yönlendirme (301, 302 vb.) dönse bile test edilen adresi kabul et
+            if res.status_code in [200, 301, 302, 307, 308]:
+                print(f"[+] Aktif Andro Adresi Sabitlendi: {test_url}")
+                return test_url
         except Exception:
             continue
+            
     return f"{BASE_DOMAIN_PREFIX}{START_INDEX}{BASE_DOMAIN_SUFFIX}"
 
 def build_m3u():
