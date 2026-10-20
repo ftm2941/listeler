@@ -8,7 +8,7 @@ BASE_DOMAIN_PREFIX = "https://taraftarium"
 BASE_DOMAIN_SUFFIX = ".xyz"
 
 # Aranacak sayaç aralığı (En son bilinen adresten ileriye doğru sıralı dener)
-START_INDEX = 1081
+START_INDEX = 1087
 MAX_TRY_COUNT = 30  # Gelecekte 1082, 1083, 1084... değiştikçe otomatik bulur
 
 OUTPUT_FILE = "kanallar.m3u8"
