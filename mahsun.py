@@ -56,17 +56,13 @@ CHANNELS = [
 ]
 
 def get_active_andro_url():
-    """Yönlendirme (redirect) yapan eski/çöp adresleri eler, sadece temiz 200 OK veren adresi alır."""
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36'
     }
     for i in range(START_INDEX, START_INDEX + MAX_TRY_COUNT):
         test_url = f"{BASE_DOMAIN_PREFIX}{i}{BASE_DOMAIN_SUFFIX}"
         try:
-            # allow_redirects=True bırakıyoruz ama 'res.history' kontrolü ile yönlendirilip yönlendirilmediğine bakıyoruz
             res = requests.get(test_url, headers=headers, timeout=4, allow_redirects=True)
-            
-            # Eğer durum 200 OK ise VE arka planda başka bir adrese yönlendirilmemişse (res.history boşsa) kabul et
             if res.status_code == 200 and len(res.history) == 0:
                 final_url = res.url.rstrip('/')
                 print(f"[+] Doğrudan Aktif ve Yönlendirmesiz Adres Bulundu: {final_url}")
@@ -74,13 +70,11 @@ def get_active_andro_url():
         except Exception:
             continue
             
-    # Hiçbiri bulunamazsa manuel olarak bulduğun 157'yi baz al
     fallback_url = f"{BASE_DOMAIN_PREFIX}{START_INDEX}{BASE_DOMAIN_SUFFIX}"
-    print(f"[!] Otomatik arama eşleşmedi, manuel adres kullanılıyor: {fallback_url}")
     return fallback_url
 
 def build_m3u():
-    active_main_url = get_active_andro_url()
+    active_main_url = get_active_andro_url().rstrip('/')
     print(f"[✓] Kullanılacak Yayın Sunucusu: {active_main_url}")
 
     m3u_lines = [
@@ -96,7 +90,10 @@ def build_m3u():
     for ch in CHANNELS:
         logo_str = f' tvg-logo="{ch["logo"]}"' if ch["logo"] else ' tvg-logo=""'
         extinf = f'#EXTINF:-1 tvg-name="{ch["name"]}"{logo_str} group-title="{ch["group"]}",{ch["name"]}'
-        stream_link = f"{active_main_url.rstrip('/')}/{ch['path']}"
+        
+        # Yolun başında / işareti yoksa güvenli olması için araya ekleniyor
+        clean_path = ch['path'].lstrip('/')
+        stream_link = f"{active_main_url}/{clean_path}"
 
         m3u_lines.append(extinf)
         m3u_lines.append(stream_link)
