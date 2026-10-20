@@ -8,6 +8,7 @@ BASE_DOMAIN_SUFFIX = ".click"
 START_INDEX = 157
 MAX_TRY_COUNT = 30  
 
+# Çıktı dosyasının adını kanallar.m3u8 olarak güncelledik
 OUTPUT_FILE = "kanallar.m3u8"
 BEIN_LOGO = "https://resmim.net/cdn/2026/07/22/ETtrXH.png"
 
