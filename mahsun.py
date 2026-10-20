@@ -1,11 +1,9 @@
 import re
 import requests
 
-# Andro sistemine özel domain yapılandırması
 BASE_DOMAIN_PREFIX = "https://andro.evrenesoglu"
 BASE_DOMAIN_SUFFIX = ".click"
 
-# Güncel çalışan bilinen adres
 START_INDEX = 157
 MAX_TRY_COUNT = 30  
 
@@ -58,24 +56,28 @@ CHANNELS = [
 ]
 
 def get_active_andro_url():
-    """Yönlendirmeleri takip etmeden test edilen domaini doğrudan yakalar."""
+    """Yönlendirme (redirect) yapan eski/çöp adresleri eler, sadece temiz 200 OK veren adresi alır."""
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36'
     }
     for i in range(START_INDEX, START_INDEX + MAX_TRY_COUNT):
         test_url = f"{BASE_DOMAIN_PREFIX}{i}{BASE_DOMAIN_SUFFIX}"
         try:
-            # allow_redirects=False ile sitenin başka adrese atması engelleniyor
-            res = requests.get(test_url, headers=headers, timeout=4, allow_redirects=False)
+            # allow_redirects=True bırakıyoruz ama 'res.history' kontrolü ile yönlendirilip yönlendirilmediğine bakıyoruz
+            res = requests.get(test_url, headers=headers, timeout=4, allow_redirects=True)
             
-            # 200 veya yönlendirme (301, 302 vb.) dönse bile test edilen adresi kabul et
-            if res.status_code in [200, 301, 302, 307, 308]:
-                print(f"[+] Aktif Andro Adresi Sabitlendi: {test_url}")
-                return test_url
+            # Eğer durum 200 OK ise VE arka planda başka bir adrese yönlendirilmemişse (res.history boşsa) kabul et
+            if res.status_code == 200 and len(res.history) == 0:
+                final_url = res.url.rstrip('/')
+                print(f"[+] Doğrudan Aktif ve Yönlendirmesiz Adres Bulundu: {final_url}")
+                return final_url
         except Exception:
             continue
             
-    return f"{BASE_DOMAIN_PREFIX}{START_INDEX}{BASE_DOMAIN_SUFFIX}"
+    # Hiçbiri bulunamazsa manuel olarak bulduğun 157'yi baz al
+    fallback_url = f"{BASE_DOMAIN_PREFIX}{START_INDEX}{BASE_DOMAIN_SUFFIX}"
+    print(f"[!] Otomatik arama eşleşmedi, manuel adres kullanılıyor: {fallback_url}")
+    return fallback_url
 
 def build_m3u():
     active_main_url = get_active_andro_url()
