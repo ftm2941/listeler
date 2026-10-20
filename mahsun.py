@@ -4,7 +4,7 @@ import requests
 from playwright.sync_api import sync_playwright
 
 # Ana domain yapısı (Sayı artarak değiştiğinde otomatik yakalar)
-BASE_DOMAIN_PREFIX = "https://andro.evrenesoglu101"
+BASE_DOMAIN_PREFIX = "https://andro.evrenesoglu1101"
 BASE_DOMAIN_SUFFIX = ".click"
 
 START_INDEX = 101
