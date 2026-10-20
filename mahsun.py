@@ -5,7 +5,7 @@ from urllib.parse import urljoin
 BASE_DOMAIN_PREFIX = "https://andro.evrenesoglu"
 BASE_DOMAIN_SUFFIX = ".click"
 
-START_INDEX = 157
+START_INDEX = 101
 MAX_TRY_COUNT = 30  
 
 # Çıktı dosyasının adını kanallar.m3u8 olarak güncelledik
