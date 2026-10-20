@@ -33,10 +33,11 @@ CHANNELS = [
     {"name": "S Sports 2", "logo": "", "group": "S Sports", "path": "checklist/androstreamlivess2.m3u8"},
     
     # Tivibu
-    {"name": "Tivibu Sports", "logo": "", "group": "Tivibu", "path": "checklist/androstreamts.m3u8"},
-    {"name": "Tivibu Sports 2", "logo": "", "group": "Tivibu", "path": "checklist/androstreamts1.m3u8"},
-    {"name": "Tivibu Sports 3", "logo": "", "group": "Tivibu", "path": "checklist/androstreamts2.m3u8"},
-    {"name": "Tivibu Sports 4", "logo": "", "group": "Tivibu", "path": "checklist/androstreamts3.m3u8"},
+    {"name": "Tivibu Sports", "logo": "", "group": "Tivibu", "path": "checklist/androstreamlivets.m3u8"},
+    {"name": "Tivibu Sports 1", "logo": "", "group": "Tivibu", "path": "checklist/androstreamlivets1.m3u8"},
+    {"name": "Tivibu Sports 2", "logo": "", "group": "Tivibu", "path": "checklist/androstreamlivets2.m3u8"},
+    {"name": "Tivibu Sports 3", "logo": "", "group": "Tivibu", "path": "checklist/androstreamlivets3.m3u8"},
+    {"name": "Tivibu Sports 4", "logo": "", "group": "Tivibu", "path": "checklist/androstreamlivets4.m3u8"},
     
     # Spor
     {"name": "Smart Spor", "logo": "", "group": "Smart Sports", "path": "checklist/androstreamlivesm1.m3u8"},
