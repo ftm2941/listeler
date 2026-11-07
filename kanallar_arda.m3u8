@@ -2,27 +2,27 @@
 #EXTVLCOPT:http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36
 #EXTVLCOPT:http-referrer=https://ardaspor39.top/
 
-#EXTINF:-1 group-title="ArdaSpor",Bein Sports 1
+#EXTINF:-1 tvg-name="Bein Sports 1" tvg-logo="https://resmim.net/cdn/2026/07/22/ETtrXH.png" group-title="BeinSports",Bein Sports 1
 https://css.d6e3eds5e065t5.help/hls/b1.m3u8
-#EXTINF:-1 group-title="ArdaSpor",Bein Sports 2
+#EXTINF:-1 tvg-name="Bein Sports 2" tvg-logo="https://resmim.net/cdn/2026/07/22/ETtrXH.png" group-title="BeinSports",Bein Sports 2
 https://css.d6e3eds5e065t5.help/hls/b2.m3u8
-#EXTINF:-1 group-title="ArdaSpor",Bein Sports 3
+#EXTINF:-1 tvg-name="Bein Sports 3" tvg-logo="https://resmim.net/cdn/2026/07/22/ETtrXH.png" group-title="BeinSports",Bein Sports 3
 https://css.d6e3eds5e065t5.help/hls/b3.m3u8
-#EXTINF:-1 group-title="ArdaSpor",Bein Sports 4
+#EXTINF:-1 tvg-name="Bein Sports 4" tvg-logo="https://resmim.net/cdn/2026/07/22/ETtrXH.png" group-title="BeinSports",Bein Sports 4
 https://css.d6e3eds5e065t5.help/hls/b4.m3u8
-#EXTINF:-1 group-title="ArdaSpor",Bein Sports 5
+#EXTINF:-1 tvg-name="Bein Sports 5" tvg-logo="https://resmim.net/cdn/2026/07/22/ETtrXH.png" group-title="BeinSports",Bein Sports 5
 https://css.d6e3eds5e065t5.help/hls/b5.m3u8
-#EXTINF:-1 group-title="ArdaSpor",Bein Sports Max 1
+#EXTINF:-1 tvg-name="Bein Sports Max 1" tvg-logo="https://resmim.net/cdn/2026/07/22/ETtrXH.png" group-title="BeinSports",Bein Sports Max 1
 https://css.d6e3eds5e065t5.help/hls/bm1.m3u8
-#EXTINF:-1 group-title="ArdaSpor",Bein Sports Max 2
+#EXTINF:-1 tvg-name="Bein Sports Max 2" tvg-logo="https://resmim.net/cdn/2026/07/22/ETtrXH.png" group-title="BeinSports",Bein Sports Max 2
 https://css.d6e3eds5e065t5.help/hls/bm2.m3u8
-#EXTINF:-1 group-title="ArdaSpor",S Sport
+#EXTINF:-1 tvg-name="S Sport" tvg-logo="https://resmim.net/cdn/2026/07/22/ETtrXH.png" group-title="BeinSports",S Sport
 https://css.d6e3eds5e065t5.help/hls/s1.m3u8
-#EXTINF:-1 group-title="ArdaSpor",S Sport 2
+#EXTINF:-1 tvg-name="S Sport 2" tvg-logo="https://resmim.net/cdn/2026/07/22/ETtrXH.png" group-title="BeinSports",S Sport 2
 https://css.d6e3eds5e065t5.help/hls/s2.m3u8
-#EXTINF:-1 group-title="ArdaSpor",TRT Spor
+#EXTINF:-1 tvg-name="TRT Spor" tvg-logo="https://resmim.net/cdn/2026/07/22/ETtrXH.png" group-title="BeinSports",TRT Spor
 https://css.d6e3eds5e065t5.help/hls/trt.m3u8
-#EXTINF:-1 group-title="ArdaSpor",TRT 1
+#EXTINF:-1 tvg-name="TRT 1" tvg-logo="https://resmim.net/cdn/2026/07/22/ETtrXH.png" group-title="BeinSports",TRT 1
 https://css.d6e3eds5e065t5.help/hls/trt1.m3u8
-#EXTINF:-1 group-title="ArdaSpor",A Spor
+#EXTINF:-1 tvg-name="A Spor" tvg-logo="https://resmim.net/cdn/2026/07/22/ETtrXH.png" group-title="BeinSports",A Spor
 https://css.d6e3eds5e065t5.help/hls/aspor.m3u8
