@@ -4,17 +4,20 @@ from playwright.async_api import async_playwright
 TARGET_URL = "https://ardaspor39.top/"
 OUTPUT_FILE = "kanallar_arda.m3u8"
 
-captured_streams = set()
+# Kanal adları ve linklerini eşleştirmek için sözlük
+chan_mapping = {}
+last_clicked_channel = "ArdaSpor Canlı Yayın"
 
 async def handle_request(request):
+    global last_clicked_channel
     url = request.url
-    # Tüm m3u8, hls akışlarını ve gizli sunucu uzantılarını yakala
-    if ".m3u8" in url or "/hls/" in url or ".help" in url or "stream" in url:
-        if "batutest" not in url and url not in captured_streams:
-            print(f"[+] Yeni Yayın Linki Yakalandı: {url}")
-            captured_streams.add(url)
+    if ".m3u8" in url or "/hls/" in url or ".help" in url:
+        if "batutest" not in url:
+            print(f"[+] Yayın Yakalandı [{last_clicked_channel}]: {url}")
+            chan_mapping[last_clicked_channel] = url
 
 async def run_scraper():
+    global last_clicked_channel
     async with async_playwright() as p:
         browser = await p.chromium.launch(
             headless=True,
@@ -39,40 +42,41 @@ async def run_scraper():
         print(f"[*] Hedef siteye gidiliyor: {TARGET_URL}")
         try:
             await page.goto(TARGET_URL, timeout=60000, wait_until="domcontentloaded")
-            await asyncio.sleep(6)
+            await asyncio.sleep(5)
             
-            # Sayfadaki olası kanal butonlarına veya liste elemanlarına tıklama simülasyonu
-            print("[*] Kanal listesi taranıyor ve butonlar tetikleniyor...")
+            # Sitedeki kanal butonlarını metinlerine göre bul ve sırayla tıkla
+            print("[*] Kanal butonları taranıyor...")
             
-            # Sayfa genelindeki tıklanabilir tüm öğeleri ve butonları dene
-            buttons = await page.query_selector_all("a, button, .channel-item, li")
-            for btn in buttons[:25]: # İlk 25 potansiyel kanal butonunu tıkla
+            # BEIN SPORTS, S SPORT, TRT gibi kanal metinlerini içeren elementleri seç
+            elements = await page.query_selector_all("button, a, div.channel, li, span")
+            
+            for el in elements:
                 try:
-                    await btn.click(timeout=1000)
-                    await asyncio.sleep(1)
+                    text = await el.inner_text()
+                    text_clean = text.strip()
+                    # Belirttiğin popüler kanal başlıklarını yakala
+                    if any(k in text_clean.upper() for k in ["BEIN", "SPORT", "TRT", "SPOR", "A SPOR"]):
+                        if len(text_clean) < 30: # Çok uzun metinleri atla
+                            last_clicked_channel = text_clean
+                            print(f"[*] Tıklanan Kanal: {last_clicked_channel}")
+                            await el.click(timeout=1500)
+                            await asyncio.sleep(3) # Yayın linkinin düşmesi için kısa bekleme
                 except Exception:
-                    pass
+                    continue
 
-            # İframe içindeki oynatıcıları ve içerikleri tetikle
-            for frame in page.frames:
-                try:
-                    await frame.click("body", timeout=2000)
-                except Exception:
-                    pass
-
-            await asyncio.sleep(10)
+            await asyncio.sleep(5)
             
         except Exception as e:
             print(f"[!] Hata oluştu: {e}")
             
         await browser.close()
 
-    # Eğer canlı yakalanamazsa veya eksik kalırsa bilinen örnek hls adresini yedek olarak ekle
-    if not captured_streams:
-        captured_streams.add("https://css.d6e3eds5e065t5.help/hls/b1.m3u8")
+    # Eğer hiçbir şey yakalanamazsa yedek olarak ana linki koy
+    if not chan_mapping:
+        chan_mapping["ArdaSpor Ana Yayın"] = "https://css.d6e3eds5e065t5.help/hls/b1.m3u8"
 
-    # M3U Dosyasını Düzenli Şekilde Oluştur
-    if captured_streams:
+    # M3U Dosyasını Oluştur
+    if chan_mapping:
         m3u_lines = [
             "#EXTM3U",
             "#EXTVLCOPT:http-user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
@@ -80,14 +84,14 @@ async def run_scraper():
             ""
         ]
         
-        for idx, stream_url in enumerate(sorted(captured_streams), start=1):
-            extinf = f'#EXTINF:-1 group-title="ArdaSpor",ArdaSpor Kanal {idx}'
+        for name, stream_url in chan_mapping.items():
+            extinf = f'#EXTINF:-1 group-title="ArdaSpor",{name}'
             m3u_lines.append(extinf)
             m3u_lines.append(stream_url)
 
         with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
             f.write("\n".join(m3u_lines) + "\n")
-        print(f"[✓] Toplam {len(captured_streams)} yayın adresi '{OUTPUT_FILE}' dosyasına başarıyla yazıldı.")
+        print(f"[✓] Toplam {len(chan_mapping)} kanal başarıyla '{OUTPUT_FILE}' dosyasına yazıldı.")
 
 if __name__ == "__main__":
     asyncio.run(run_scraper())
