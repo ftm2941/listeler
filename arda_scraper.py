@@ -8,10 +8,10 @@ captured_streams = set()
 
 async def handle_request(request):
     url = request.url
-    # .m3u8 uzantılı veya .help / benzeri yayın sunucusu isteklerini yakala
-    if ".m3u8" in url or "/hls/" in url or ".help" in url:
+    # Tüm m3u8, hls akışlarını ve gizli sunucu uzantılarını yakala
+    if ".m3u8" in url or "/hls/" in url or ".help" in url or "stream" in url:
         if "batutest" not in url and url not in captured_streams:
-            print(f"[+] Yayın Linki Yakalandı: {url}")
+            print(f"[+] Yeni Yayın Linki Yakalandı: {url}")
             captured_streams.add(url)
 
 async def run_scraper():
@@ -41,19 +41,22 @@ async def run_scraper():
             await page.goto(TARGET_URL, timeout=60000, wait_until="domcontentloaded")
             await asyncio.sleep(6)
             
-            # Sayfa içi tıklama simülasyonları ile video/oynatıcı isteklerini tetikle
-            try:
-                await page.mouse.click(500, 500)
-            except Exception:
-                pass
+            # Sayfadaki olası kanal butonlarına veya liste elemanlarına tıklama simülasyonu
+            print("[*] Kanal listesi taranıyor ve butonlar tetikleniyor...")
+            
+            # Sayfa genelindeki tıklanabilir tüm öğeleri ve butonları dene
+            buttons = await page.query_selector_all("a, button, .channel-item, li")
+            for btn in buttons[:25]: # İlk 25 potansiyel kanal butonunu tıkla
+                try:
+                    await btn.click(timeout=1000)
+                    await asyncio.sleep(1)
+                except Exception:
+                    pass
 
+            # İframe içindeki oynatıcıları ve içerikleri tetikle
             for frame in page.frames:
                 try:
                     await frame.click("body", timeout=2000)
-                except Exception:
-                    pass
-                try:
-                    await frame.click("video", timeout=2000)
                 except Exception:
                     pass
 
@@ -64,12 +67,11 @@ async def run_scraper():
             
         await browser.close()
 
-    # Eğer dinamik yakalanamadıysa, bilinen çalışan ana kaynak adresini manuel yedek olarak ekle
+    # Eğer canlı yakalanamazsa veya eksik kalırsa bilinen örnek hls adresini yedek olarak ekle
     if not captured_streams:
-        print("[!] Canlı yakalanamadı, bilinen aktif adres ekleniyor.")
         captured_streams.add("https://css.d6e3eds5e065t5.help/hls/b1.m3u8")
 
-    # M3U Dosyasını Oluştur
+    # M3U Dosyasını Düzenli Şekilde Oluştur
     if captured_streams:
         m3u_lines = [
             "#EXTM3U",
@@ -79,13 +81,13 @@ async def run_scraper():
         ]
         
         for idx, stream_url in enumerate(sorted(captured_streams), start=1):
-            extinf = f'#EXTINF:-1 group-title="ArdaSpor",ArdaSpor Yayın {idx}'
+            extinf = f'#EXTINF:-1 group-title="ArdaSpor",ArdaSpor Kanal {idx}'
             m3u_lines.append(extinf)
             m3u_lines.append(stream_url)
 
         with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
             f.write("\n".join(m3u_lines) + "\n")
-        print(f"[✓] Başarıyla {len(captured_streams)} yayın adresi '{OUTPUT_FILE}' dosyasına yazıldı.")
+        print(f"[✓] Toplam {len(captured_streams)} yayın adresi '{OUTPUT_FILE}' dosyasına başarıyla yazıldı.")
 
 if __name__ == "__main__":
     asyncio.run(run_scraper())
