@@ -10,11 +10,11 @@ channels = [
     ("Bein Sports 5", "b5", "tracks", "https://resmim.net/cdn/2026/07/22/ETtrXH.png"),
     ("Bein Sports Max 1", "bm1", "tracks", "https://resmim.net/cdn/2026/07/22/ETtrXH.png"),
     ("Bein Sports Max 2", "bm2", "tracks", "https://resmim.net/cdn/2026/07/22/ETtrXH.png"),
-    ("S Sport", "ss", "tracks", "https://resmim.net/cdn/2026/07/22/ETtrXH.png"),
-    ("S Sport 2", "ss2", "tracks", "https://resmim.net/cdn/2026/07/22/ETtrXH.png"),
-    ("TRT Spor", "trtspor", "tracks", "https://resmim.net/cdn/2026/07/22/ETtrXH.png"),
-    ("TRT 1", "trt1", "tracks", "https://resmim.net/cdn/2026/07/22/ETtrXH.png"),
-    ("A Spor", "aspor", "tracks", "https://resmim.net/cdn/2026/07/22/ETtrXH.png")
+    ("S Sport", "ss", "tracks", "https://yt3.googleusercontent.com/vJ6tfodHaOIAQbgPIN6Oa0cPUk5gdFAuXbLEPxMlnthgOQ2tBr8FU2UweMk-ksmyKiW3bIiFyRU=s900-c-k-c0x00ffffff-no-rj"),
+    ("S Sport 2", "ss2", "tracks", "https://yt3.googleusercontent.com/vJ6tfodHaOIAQbgPIN6Oa0cPUk5gdFAuXbLEPxMlnthgOQ2tBr8FU2UweMk-ksmyKiW3bIiFyRU=s900-c-k-c0x00ffffff-no-rj"),
+    ("TRT Spor", "trtspor", "tracks", "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQjuGO-ReknxTi5qGL5Y2gaAfXj3HfGoRcgBzcnGFLow29NQxwFk_gUGls&s=10"),
+    ("TRT 1", "trt1", "tracks", "https://www.trt.net.tr/_nuxt/img/trt-1-televizyon-kanali.4c9c3dd.png"),
+    ("A Spor", "aspor", "tracks", "https://cdn.aptoide.com/imgs/5/0/d/50d4bfd3c109b25b96c8e95c4d9d7df9_icon.png")
 ]
 
 BASE_DOMAIN = "https://css.d6e3eds5e065t5.help"
