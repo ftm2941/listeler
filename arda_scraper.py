@@ -3,7 +3,7 @@ OUTPUT_FILE = "kanallar_arda.m3u8"
 
 # Kanal adı, URL kodu/yolu ve logosu
 channels = [
-    ("Bein Sports 1", "hls/b1.m3u8", "hls", "https://resmim.net/cdn/2026/07/22/ETtrXH.png"),
+    ("Bein Sports 1", "b1", "tracks", "https://resmim.net/cdn/2026/07/22/ETtrXH.png"),
     ("Bein Sports 2", "b2", "tracks", "https://resmim.net/cdn/2026/07/22/ETtrXH.png"),
     ("Bein Sports 3", "b3", "tracks", "https://resmim.net/cdn/2026/07/22/ETtrXH.png"),
     ("Bein Sports 4", "b4", "tracks", "https://resmim.net/cdn/2026/07/22/ETtrXH.png"),
