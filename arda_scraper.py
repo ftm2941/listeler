@@ -1,4 +1,4 @@
-TARGET_URL = "https://ardaspor39.top/"
+TARGET_URL = "https://selcuksports180.top/"
 OUTPUT_FILE = "kanallar_arda.m3u8"
 
 # Kanal adı, URL kodu/yolu ve logosu
