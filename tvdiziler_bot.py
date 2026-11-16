@@ -21,15 +21,13 @@ def dizileri_cek():
     soup = BeautifulSoup(response.text, 'html.parser')
     dizi_listesi = []
 
-    # Sadece dizi kartlarının veya son bölüm listelerinin bulunduğu alanları hedefleyelim
-    # Site yapısındaki ana içerik kapsayıcılarını tarıyoruz
     for kart in soup.select(
         '.card, .dizi-kutusu, article, .col-xl-2, .col-lg-3, .col-md-4'
     ):
       baslik_elem = kart.find(['h2', 'h3', 'a', 'span'])
       if baslik_elem:
         baslik = baslik_elem.get_text(strip=True)
-        link = (
+        detay_link = (
             baslik_elem['href']
             if baslik_elem.name == 'a'
             else (
@@ -37,9 +35,7 @@ def dizileri_cek():
             )
         )
 
-        # -------------------------------------------------------------
-        # FİLTRELEME: Menü linklerini, profilleri ve puanları dışarıda bırakalım
-        # -------------------------------------------------------------
+        # Filtreleme (Menüleri ve gereksizleri eleyelim)
         haric_kelimeler = [
             'anasayfa',
             'keşfet',
@@ -56,13 +52,11 @@ def dizileri_cek():
             'twitter',
             'instagram',
         ]
+        if any(kelime in baslik.lower() for kelime in haric_kelimeler):
+          continue
 
-        baslik_kucuk = baslik.lower()
-        if any(kelime in baslik_kucuk for kelime in haric_kelimeler):
-          continue  # Bu başlıkları atla
-
-        # Sadece gerçek dizi/bölüm niteliği taşıyanları alalım
         if baslik and len(baslik) > 3:
+          # Afiş görselini yakala
           img_elem = kart.find('img')
           logo = ''
           if img_elem:
@@ -77,12 +71,49 @@ def dizileri_cek():
             elif logo and not logo.startswith('http'):
               logo = 'https://tvdiziler.tv/' + logo
 
-          if link.startswith('/'):
-            link = 'https://tvdiziler.tv' + link
-          elif not link.startswith('http'):
-            link = 'https://tvdiziler.tv/' + link
+          if detay_link.startswith('/'):
+            detay_link = 'https://tvdiziler.tv' + detay_link
+          elif not detay_link.startswith('http'):
+            detay_link = 'https://tvdiziler.tv/' + detay_link
 
-          dizi_listesi.append({'baslik': baslik, 'link': link, 'logo': logo})
+          # -------------------------------------------------------------
+          # DETAY SAYFASINDAN HAM VİDEO LİNKİNİ ÇEKME ADIMI
+          # -------------------------------------------------------------
+          ham_video_link = detay_link  # Varsayılan olarak detay linki
+          try:
+            detay_resp = requests.get(detay_link, headers=headers, timeout=5)
+            if detay_resp.status_code == 200:
+              detay_soup = BeautifulSoup(detay_resp.text, 'html.parser')
+              # Sitedeki video oynatıcı kaynaklarını (iframe veya video src) arayalım
+              video_tag = detay_soup.find('video')
+              iframe_tag = detay_soup.find('iframe')
+
+              if video_tag and video_tag.get('src'):
+                ham_video_link = video_tag.get('src')
+              elif iframe_tag and iframe_tag.get('src'):
+                ham_video_link = iframe_tag.get('src')
+              else:
+                # Script içindeki .m3u8 veya .mp4 uzantılı ham linkleri arayalım
+                for script in detay_soup.find_all('script'):
+                  script_text = script.string or ''
+                  if '.m3u8' in script_text or '.mp4' in script_text:
+                    # Basit bir string ayıklama yapılabilir
+                    import re
+
+                    match = re.search(
+                        r'https?://[^\s<>"]+?\.(?:m3u8|mp4)', script_text
+                    )
+                    if match:
+                      ham_video_link = match.group(0)
+                      break
+          except Exception:
+            pass  # Detay sayfasına ulaşılamazsa ana linki kullanır
+
+          dizi_listesi.append({
+              'baslik': baslik,
+              'link': ham_video_link,
+              'logo': logo,
+          })
 
     unique_diziler = {d['link']: d for d in dizi_listesi}.values()
     return list(unique_diziler)
@@ -101,14 +132,19 @@ def m3u8_kaydet(veriler):
           item['baslik'].replace('\n', ' ').replace('\r', '').strip()
       )
       logo_url = item['logo']
+      video_link = item['link']
 
+      # Eksiksiz tvg-name, tvg-logo ve grup etiketleri ile ham oynatma adresi
       f.write(
           f'#EXTINF:-1 tvg-name="{temiz_baslik}" tvg-logo="{logo_url}"'
           f' group-title="TvDiziler",{temiz_baslik}\n'
       )
-      f.write(f"{item['link']}\n")
+      f.write(f'{video_link}\n')
 
-  print(f'{len(veriler)} adet dizi başarıyla tvdiziler.m3u8 dosyasına yazıldı.')
+  print(
+      f'{len(veriler)} adet dizi ham linkleri ve afişleri ile tvdiziler.m3u8'
+      ' dosyasına kaydedildi.'
+  )
 
 
 if __name__ == '__main__':
