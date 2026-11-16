@@ -7,21 +7,16 @@ URL = 'https://tvdiziler.tv/'
 
 
 def temizle_baslik(ham_baslik):
+  """Başlıktaki tekrarlayan birleşmeleri ve çöpleri kusursuz şekilde temizler"""
   temiz = ham_baslik.replace('\n', ' ').replace('\r', '').strip()
-  temiz = re.sub(
-      r'(Bugün|Dün|\d{1,2}\s+[A-Za-z]+\s+\d{4}|\d{1,2}\s+[Kk]asım|\d{1,2}\s+[Aa]ralık|\d{1,2}\s+[Oo]cak|\d{1,2}\s+[Şş]ubat|\d{1,2}\s+[Mm]art|\d{1,2}\s+[Nn]isan|\d{1,2}\s+[Mm]ayıs|\d{1,2}\s+[Hh]aziran|\d{1,2}\s+[Tt]emmuz|\d{1,2}\s+[Aa]ğustos|\d{1,2}\s+[Ee]ylül|\d{1,2}\s+[Ee]kim)',
-      '',
-      temiz,
-  )
-  temiz = (
-      temiz.replace('izle', ' ')
-      .replace('İzle', ' ')
-      .replace('FULL', '')
-      .replace('Full', '')
-  )
+  
+  # Tarihleri, Bugün, Dün, izle ve benzeri ifadeleri kaldır
+  temiz = re.sub(r'(Bugün|Dün|\d{1,2}\s+[A-Za-z]+\s+\d{4}|\d{1,2}\s+[Kk]asım|\d{1,2}\s+[Aa]ralık|\d{1,2}\s+[Oo]cak|\d{1,2}\s+[Şş]ubat|\d{1,2}\s+[Mm]art|\d{1,2}\s+[Nn]isan|\d{1,2}\s+[Mm]ayıs|\d{1,2}\s+[Hh]aziran|\d{1,2}\s+[Tt]emmuz|\d{1,2}\s+[Aa]ğustos|\d{1,2}\s+[Ee]ylül|\d{1,2}\s+[Ee]kim)', '', temiz)
+  temiz = temiz.replace('izle', ' ').replace('İzle', ' ').replace('FULL', '').replace('Full', '')
   temiz = re.sub(r'\d+\.Bölüm.*', '', temiz)
   temiz = re.sub(r'Son Bölüm.*', '', temiz)
 
+  # Tekrarlayan kelime / karakter ikilenmelerini temizle
   uzunluk = len(temiz)
   if uzunluk > 4:
     yari = uzunluk // 2
@@ -31,8 +26,8 @@ def temizle_baslik(ham_baslik):
       kelimeler = temiz.split()
       if len(kelimeler) >= 4 and len(kelimeler) % 2 == 0:
         orta = len(kelimeler) // 2
-        p1 = ' '.join(kelimeler[:orta])
-        p2 = ' '.join(kelimeler[orta:])
+        p1 = " ".join(kelimeler[:orta])
+        p2 = " ".join(kelimeler[orta:])
         if p1.lower() == p2.lower():
           temiz = p1
 
@@ -40,18 +35,15 @@ def temizle_baslik(ham_baslik):
 
 
 def ham_video_bul(detay_link):
-  """Detay sayfasındaki dinamik script, m3u8 ve twimg ham linklerini yakalar"""
+  """Detay sayfasındaki .m3u8 (twimg vb.), .mp4 ve Yandex storage linklerini yakalar"""
   headers = {
       'User-Agent': (
           'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
           'AppleWebKit/537.36 (KHTML, like Gecko) '
           'Chrome/122.0.0.0 Safari/537.36'
       ),
-      'Accept': (
-          'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8'
-      ),
       'Referer': URL,
-      'X-Requested-With': 'XMLHttpRequest',
+      'X-Requested-With': 'XMLHttpRequest'
   }
 
   try:
@@ -59,43 +51,35 @@ def ham_video_bul(detay_link):
     if resp.status_code == 200:
       html = resp.text
 
-      # 1. Doğrudan twimg veya herhangi bir m3u8 linkini arayalım (Örn: video.twimg.com/...m3u8?tag=...)
-      m3u8_match = re.search(
-          r'https?://[^\s<>"]+?\.m3u8(?:\?[^\s<>"]*)?', html
-      )
+      # 1. twimg veya diğer .m3u8 akış linklerini yakala (Parametreli dahil)
+      m3u8_match = re.search(r'https?://[^\s<>"]+?\.m3u8(?:\?[^\s<>"]*)?', html)
       if m3u8_match:
-        link = m3u8_match.group(0).rstrip('"\'\\')
-        # Eğer tırnak içinde veya escape edilmişse temizle
-        link = link.replace('\\/', '/')
+        link = m3u8_match.group(0).rstrip('"\'\\').replace('\\/', '/')
         return link
 
-      # 2. .mp4 video bağlantılarını arayalım
+      # 2. .mp4 video bağlantılarını yakala
       mp4_match = re.search(r'https?://[^\s<>"]+?\.mp4(?:\?[^\s<>"]*)?', html)
       if mp4_match:
         link = mp4_match.group(0).rstrip('"\'\\').replace('\\/', '/')
         return link
 
       # 3. Yandex storage linkleri
-      yandex_match = re.search(
-          r'https?://[^\s<>"]+?storage\.yandex\.net[^\s<>"]+', html
-      )
+      yandex_match = re.search(r'https?://[^\s<>"]+?storage\.yandex\.net[^\s<>"]+', html)
       if yandex_match:
         link = yandex_match.group(0).rstrip('"\'\\').replace('\\/', '/')
         return link
 
-      # 4. Script etiketlerinin içinde javascript ile gizlenmiş URL'leri taranması
+      # 4. JavaScript script tagleri içindeki gizli m3u8/mp4 linkleri
       soup = BeautifulSoup(html, 'html.parser')
       for script in soup.find_all('script'):
         script_text = script.string or ''
         if '.m3u8' in script_text or '.mp4' in script_text:
-          match = re.search(
-              r'https?://[^\s<>"]+?\.(?:m3u8|mp4)(?:\?[^\s<>"]*)?', script_text
-          )
+          match = re.search(r'https?://[^\s<>"]+?\.(?:m3u8|mp4)(?:\?[^\s<>"]*)?', script_text)
           if match:
             return match.group(0).rstrip('"\'\\').replace('\\/', '/')
 
-  except Exception as e:
-    print(f'Ham video aranırken hata: {e}')
+  except Exception:
+    pass
 
   return None
 
@@ -107,7 +91,7 @@ def dizileri_cek():
           'AppleWebKit/537.36 (KHTML, like Gecko) '
           'Chrome/122.0.0.0 Safari/537.36'
       ),
-      'Referer': URL,
+      'Referer': URL
   }
 
   try:
@@ -151,10 +135,10 @@ def dizileri_cek():
 
       temiz_ad = temizle_baslik(baslik)
 
-      # Detay sayfasına arka planda girip ham video linkini çekiyoruz
+      # Detay sayfasına arka planda girip twimg / m3u8 ham video bağlantısını çekiyoruz
       ham_link = ham_video_bul(link)
-
-      # Eğer ham link bulunamazsa, kullanıcı istemediği için bu kartı atlıyoruz (site linki yazmıyoruz)
+      
+      # Sadece başarılı bir şekilde ham video linki bulunanları listeye alıyoruz
       if not ham_link:
         continue
 
@@ -169,32 +153,3 @@ def dizileri_cek():
 
   except Exception as e:
     print(f'Veri çekilirken hata oluştu: {e}')
-    return []
-
-
-def m3u8_kaydet(veriler):
-  dosya = 'tvdiziler.m3u8'
-  with open(dosya, 'w', encoding='utf-8') as f:
-    f.write('#EXTM3U\n')
-    for item in veriler:
-      baslik = temizle_baslik(item['baslik'])
-      logo_url = item['logo']
-      video_link = item['link']
-
-      f.write(
-          f'#EXTINF:-1 tvg-logo="{logo_url}"'
-          f' group-title="Yeni Bölümler | {baslik}", {baslik}\n'
-      )
-      f.write('#EXTVLCOPT:http-referrer=https://tvdiziler.tv\n')
-      f.write(f'{video_link}\n\n')
-
-  print(
-      f'{len(veriler)} adet ham video bağlantılı dizi tvdiziler.m3u8 dosyasına'
-      ' kaydedildi.'
-  )
-
-
-if __name__ == '__main__':
-  veriler = dizileri_cek()
-  if veriler:
-    m3u8_kaydet(veriler)
