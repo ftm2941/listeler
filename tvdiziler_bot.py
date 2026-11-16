@@ -7,22 +7,30 @@ URL = 'https://tvdiziler.tv/'
 
 
 def temizle_baslik(ham_baslik):
-  # Başlıktaki tekrarları, "izle", "Bugün", "Dün" ve tarihleri temizleyelim
+  # "Uzak Şehir izleUzak Şehir 73.Bölüm izleBugün" gibi birleşik metinleri çözelim
   temiz = ham_baslik.replace('\n', ' ').replace('\r', '').strip()
+
+  # Tarih, Bugün, Dün ve 'izle' kelimelerini atalım
   temiz = re.sub(
-      r'(Bugün|Dün|\d{1,2}\s+[A-Za-z]+\s+\d{4}|\d{1,2}\s+Kasım|\d{1,2}\s+Aralık)',
+      r'(Bugün|Dün|\d{1,2}\s+[A-Za-z]+\s+\d{4}|\d{1,2}\s+[Kk]asım|\d{1,2}\s+[Aa]ralık|\d{1,2}\s+[Oo]cak|\d{1,2}\s+[Şş]ubat|\d{1,2}\s+[Mm]art|\d{1,2}\s+[Nn]isan|\d{1,2}\s+[Mm]ayıs|\d{1,2}\s+[Hh]aziran|\d{1,2}\s+[Tt]emmuz|\d{1,2}\s+[Aa]ğustos|\d{1,2}\s+[Ee]ylül|\d{1,2}\s+[Ee]kim)',
       '',
       temiz,
   )
-  temiz = temiz.replace('izle', ' ').replace('  ', ' ').strip()
+  temiz = (
+      temiz.replace('izle', ' ')
+      .replace('İzle', ' ')
+      .replace('FULL', '')
+      .replace('Full', '')
+  )
 
-  # Eğer kelime içinde tekrar eden yapışmalar varsa sadeleştirelim
-  kelimeler = temiz.split()
-  yari = int(len(kelimeler) / 2)
-  if len(kelimeler) > 4 and kelimeler[:yari] == kelimeler[yari : yari * 2]:
-    temiz = ' '.join(kelimeler[:yari])
+  # Tekrarlayan kelime gruplarını ayıkla
+  parcalar = temiz.split()
+  if len(parcalar) > 4:
+    yari = int(len(parcalar) / 2)
+    if parcalar[:yari] == parcalar[yari : yari * 2]:
+      temiz = ' '.join(parcalar[:yari])
 
-  return temiz if temiz else 'Dizi Bölümü'
+  return temiz.strip() if temiz else 'Dizi Bölümü'
 
 
 def dizileri_cek():
@@ -41,25 +49,23 @@ def dizileri_cek():
     soup = BeautifulSoup(response.text, 'html.parser')
     dizi_listesi = []
 
-    for kart in soup.select('.col-xl-2, .col-lg-3, .col-md-4, article, .card'):
-      baslik_elem = kart.find(['h2', 'h3', 'a', 'span'])
-      if baslik_elem:
-        baslik = baslik_elem.get_text(strip=True)
-        link = (
-            baslik_elem['href']
-            if baslik_elem.name == 'a'
-            else (kart.find('a')['href'] if kart.find('a') else '')
-        )
+    # Sitedeki tüm linkleri tarıyoruz
+    for a_tag in soup.find_all('a', href=True):
+      link = a_tag['href']
+      baslik = a_tag.get_text(strip=True)
 
-        if not link:
-          continue
+      # -------------------------------------------------------------
+      # KESİN KURAL: Linkte 'bolum' geçmiyorsa bu bir dizi değildir, at!
+      # -------------------------------------------------------------
+      if 'bolum' not in link:
+        continue
 
-        # 1. KURAL: Afişi (img) olmayan hiçbir şeyi içeri alma!
-        # Menülerin, profillerin ve sosyal medyanın afişi yoktur, bu sayede hepsi elenir.
-        img_elem = kart.find('img')
-        if not img_elem:
-          continue
+      # İçinde resim (afiş) barındıran kartı bulalım
+      kart = a_tag.find_parent(['article', 'div', 'li'])
+      img_elem = kart.find('img') if kart else a_tag.find('img')
 
+      logo = ''
+      if img_elem:
         logo = (
             img_elem.get('data-src')
             or img_elem.get('src')
@@ -67,22 +73,23 @@ def dizileri_cek():
             or ''
         )
 
-        if not logo or 'uploads/series' not in logo:
-          continue  # Sadece dizi afişi klasöründen gelenleri kabul et
+      # Afiş yoksa veya site dışıysa atla
+      if not logo or 'uploads/series' not in logo:
+        continue
 
-        if logo.startswith('/'):
-          logo = 'https://tvdiziler.tv' + logo
-        elif not logo.startswith('http'):
-          logo = 'https://tvdiziler.tv/' + logo
+      if logo.startswith('/'):
+        logo = 'https://tvdiziler.tv' + logo
+      elif not logo.startswith('http'):
+        logo = 'https://tvdiziler.tv/' + logo
 
-        if link.startswith('/'):
-          link = 'https://tvdiziler.tv' + link
-        elif not link.startswith('http'):
-          link = 'https://tvdiziler.tv/' + link
+      if link.startswith('/'):
+        link = 'https://tvdiziler.tv' + link
+      elif not link.startswith('http'):
+        link = 'https://tvdiziler.tv/' + link
 
-        temiz_ad = temizle_baslik(baslik)
+      temiz_ad = temizle_baslik(baslik)
 
-        dizi_listesi.append({'baslik': temiz_ad, 'link': link, 'logo': logo})
+      dizi_listesi.append({'baslik': temiz_ad, 'link': link, 'logo': logo})
 
     unique_diziler = {d['link']: d for d in dizi_listesi}.values()
     return list(unique_diziler)
@@ -101,17 +108,15 @@ def m3u8_kaydet(veriler):
       logo_url = item['logo']
       video_link = item['link']
 
-      # İstediğiniz format yapısı
       f.write(
           f'#EXTINF:-1 tvg-logo="{logo_url}"'
-          f' group-title="Yerli - {baslik}", {baslik} Son Bölüm\n'
+          f' group-title="Yerli - {baslik}", {baslik}\n'
       )
       f.write('#EXTVLCOPT:http-referrer=https://tvdiziler.tv\n')
       f.write(f'{video_link}\n\n')
 
   print(
-      f'{len(veriler)} adet saf dizi içeriği tvdiziler.m3u8 dosyasına'
-      ' kaydedildi.'
+      f'{len(veriler)} adet tertemiz dizi tvdiziler.m3u8 dosyasına kaydedildi.'
   )
 
 
