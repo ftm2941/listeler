@@ -7,26 +7,28 @@ URL = 'https://tvdiziler.tv/'
 
 
 def temizle_baslik(ham_baslik):
-  # Başlıktaki tekrarlayan birleşmeleri ve çöpleri temizleyelim
+  """Başlıktaki tekrarlayan birleşmeleri ve çöpleri tamamen temizler"""
   temiz = ham_baslik.replace('\n', ' ').replace('\r', '').strip()
   
-  # "Bugün", "Dün", "izle" ve tarihleri ayıkla
+  # Tarihleri, Bugün, Dün, izle ve benzeri ifadeleri kaldır
   temiz = re.sub(r'(Bugün|Dün|\d{1,2}\s+[A-Za-z]+\s+\d{4}|\d{1,2}\s+[Kk]asım|\d{1,2}\s+[Aa]ralık|\d{1,2}\s+[Oo]cak|\d{1,2}\s+[Şş]ubat|\d{1,2}\s+[Mm]art|\d{1,2}\s+[Nn]isan|\d{1,2}\s+[Mm]ayıs|\d{1,2}\s+[Hh]aziran|\d{1,2}\s+[Tt]emmuz|\d{1,2}\s+[Aa]ğustos|\d{1,2}\s+[Ee]ylül|\d{1,2}\s+[Ee]kim)', '', temiz)
   temiz = temiz.replace('izle', ' ').replace('İzle', ' ').replace('FULL', '').replace('Full', '')
-  temiz = re.sub(r'\d+\.Bölüm.*', '', temiz) # Bölüm ibaresinden sonrasını temizle
+  temiz = re.sub(r'\d+\.Bölüm.*', '', temiz)
 
-  # Eğer başlık kendi içinde ikiye katlandıysa ("Kalbim Sana EmanetKalbim Sana Emanet") tekine indir
+  # Yapışık kelimeleri ortadan ikiye bölerek temizleme (Örn: "Altı Üstü İstanbulAltı Üstü istanbul" -> "Altı Üstü İstanbul")
   kelimeler = temiz.split()
-  if len(kelimeler) > 2 and len(kelimeler) % 2 == 0:
+  if len(kelimeler) >= 4:
     yari = int(len(kelimeler) / 2)
-    if kelimeler[:yari] == kelimeler[yari:]:
-      temiz = ' '.join(kelimeler[:yari])
+    birinci_yari = " ".join(kelimeler[:yari]).lower()
+    ikinci_yari = " ".join(kelimeler[yari:]).lower()
+    if birinci_yari == ikinci_yari:
+      temiz = " ".join(kelimeler[:yari])
 
-  return temiz.strip() if temiz else 'Dizi'
+  return temiz.strip() if temiz else 'Dizi Bölümü'
 
 
 def ham_video_bul(detay_link, headers):
-  """Detay sayfasındaki dinamik script veya gizli player kaynaklarından ham video linkini bulur"""
+  """Detay sayfasından Yandex veya ham video bağlantısını çekmeye çalışır"""
   try:
     resp = requests.get(detay_link, headers=headers, timeout=8)
     if resp.status_code == 200:
@@ -42,7 +44,7 @@ def ham_video_bul(detay_link, headers):
       if video_match:
         return video_match.group(0).rstrip('"\'\\')
 
-      # 3. İframe içerisindeki kaynakları tarayalım
+      # 3. İframe veya video etiketlerini tarayalım
       soup = BeautifulSoup(html, 'html.parser')
       for iframe in soup.find_all('iframe'):
         src = iframe.get('src', '')
@@ -96,7 +98,7 @@ def dizileri_cek():
 
       if logo.startswith('/'):
         logo = 'https://tvdiziler.tv' + logo
-      elif not logo.startswith('http'):
+      elif logo and not logo.startswith('http'):
         logo = 'https://tvdiziler.tv/' + logo
 
       if link.startswith('/'):
@@ -104,14 +106,12 @@ def dizileri_cek():
       elif not link.startswith('http'):
         link = 'https://tvdiziler.tv/' + link
 
-      # Detay sayfasına gidip ham video linkini çekmeye çalışalım
-      ham_link = ham_video_bul(link, headers)
-      
-      # Eğer ham video bulunamazsa yedek olarak detay linkini kullanır
-      oynatilacak_link = ham_link if ham_link else link
-
-      # Başlığı tertemiz yapalım
+      # Temiz başlık oluştur
       temiz_ad = temizle_baslik(baslik)
+
+      # Ham video linkini detay sayfasından çekmeye çalış
+      ham_link = ham_video_bul(link, headers)
+      oynatilacak_link = ham_link if ham_link else link
 
       dizi_listesi.append({
           'baslik': temiz_ad,
@@ -136,7 +136,7 @@ def m3u8_kaydet(veriler):
       logo_url = item['logo']
       video_link = item['link']
 
-      # İstediğiniz temiz format
+      # Tertemiz format
       f.write(
           f'#EXTINF:-1 tvg-logo="{logo_url}"'
           f' group-title="Yerli - {baslik}", {baslik} Son Bölüm\n'
@@ -145,8 +145,7 @@ def m3u8_kaydet(veriler):
       f.write(f'{video_link}\n\n')
 
   print(
-      f'{len(veriler)} adet dizi ham video linkleriyle tvdiziler.m3u8 dosyasına'
-      ' kaydedildi.'
+      f'{len(veriler)} adet tertemiz dizi tvdiziler.m3u8 dosyasına kaydedildi.'
   )
 
 
