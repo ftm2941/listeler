@@ -15,7 +15,7 @@ def temizle_baslik(ham_baslik):
   temiz = temiz.replace('izle', ' ').replace('İzle', ' ').replace('FULL', '').replace('Full', '')
   temiz = re.sub(r'\d+\.Bölüm.*', '', temiz)
 
-  # Yapışık kelimeleri ortadan ikiye bölerek temizleme (Örn: "Altı Üstü İstanbulAltı Üstü istanbul" -> "Altı Üstü İstanbul")
+  # Yapışık kelimeleri ortadan ikiye bölerek temizleme
   kelimeler = temiz.split()
   if len(kelimeler) >= 4:
     yari = int(len(kelimeler) / 2)
@@ -28,7 +28,7 @@ def temizle_baslik(ham_baslik):
 
 
 def ham_video_bul(detay_link, headers):
-  """Detay sayfasından Yandex veya ham video bağlantısını çekmeye çalışır"""
+  """Detay sayfasına girip Yandex storage veya ham .mp4 / .m3u8 linkini yakalar"""
   try:
     resp = requests.get(detay_link, headers=headers, timeout=8)
     if resp.status_code == 200:
@@ -44,7 +44,7 @@ def ham_video_bul(detay_link, headers):
       if video_match:
         return video_match.group(0).rstrip('"\'\\')
 
-      # 3. İframe veya video etiketlerini tarayalım
+      # 3. İframe içerisindeki kaynakları tarayalım
       soup = BeautifulSoup(html, 'html.parser')
       for iframe in soup.find_all('iframe'):
         src = iframe.get('src', '')
@@ -106,11 +106,12 @@ def dizileri_cek():
       elif not link.startswith('http'):
         link = 'https://tvdiziler.tv/' + link
 
-      # Temiz başlık oluştur
       temiz_ad = temizle_baslik(baslik)
 
-      # Ham video linkini detay sayfasından çekmeye çalış
+      # Detay sayfasına gidip Yandex / ham video linkini çekiyoruz
       ham_link = ham_video_bul(link, headers)
+      
+      # Eğer ham link çözülemediyse yedek olarak detay linkini tutar
       oynatilacak_link = ham_link if ham_link else link
 
       dizi_listesi.append({
@@ -136,16 +137,17 @@ def m3u8_kaydet(veriler):
       logo_url = item['logo']
       video_link = item['link']
 
-      # Tertemiz format
+      # "Yeni Bölümler" kategorisi altında listelenmesini sağlıyoruz
       f.write(
           f'#EXTINF:-1 tvg-logo="{logo_url}"'
-          f' group-title="Yerli - {baslik}", {baslik} Son Bölüm\n'
+          f' group-title="Yeni Bölümler", {baslik}\n'
       )
       f.write('#EXTVLCOPT:http-referrer=https://tvdiziler.tv\n')
       f.write(f'{video_link}\n\n')
 
   print(
-      f'{len(veriler)} adet tertemiz dizi tvdiziler.m3u8 dosyasına kaydedildi.'
+      f'{len(veriler)} adet dizi "Yeni Bölümler" kategorisiyle tvdiziler.m3u8'
+      ' dosyasına kaydedildi.'
   )
 
 
