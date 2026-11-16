@@ -31,11 +31,30 @@ def dizileri_cek():
             baslik_elem['href']
             if baslik_elem.name == 'a'
             else (
-                kart.find('a')['href'] if kart.find('a') else URL.rstrip('/')
+                kart.find('a')['href'] if kart.find('a') else ''
             )
         )
 
-        # Menüleri ve gereksiz etiketleri filtrele
+        if not link:
+          continue
+
+        # -------------------------------------------------------------
+        # KESİN FİLTRELEME: Menüleri, profilleri ve ana sayfayı ayıkla
+        # -------------------v------------------------------------------
+        yasakli_uzantilar = [
+            'profile/',
+            'kesfet',
+            'takvim',
+            'dizi-izle',
+            'film-izle',
+            'tartismalar',
+            'oyuncular',
+            'giris',
+            'kayit',
+        ]
+        if any(yasak in link for yasak in yasakli_uzantilar) or link == 'https://tvdiziler.tv/' or link == 'https://tvdiziler.tv':
+          continue
+
         haric_kelimeler = [
             'anasayfa',
             'keşfet',
@@ -76,11 +95,9 @@ def dizileri_cek():
           elif not link.startswith('http'):
             link = 'https://tvdiziler.tv/' + link
 
-          # Dizi adını temiz ve okunabilir yapalım (Örn: "Annem Ankara Son Bölüm")
           temiz_baslik = baslik.replace('\n', ' ').replace('\r', '').strip()
-          if not temiz_baslik.lower().endswith('son bölüm'):
-            temiz_baslik += ' Son Bölüm'
-
+          
+          # Dizi adını isteğinize uygun formata getirelim
           dizi_listesi.append({
               'baslik': temiz_baslik,
               'link': link,
@@ -104,7 +121,6 @@ def m3u8_kaydet(veriler):
       logo_url = item['logo']
       video_link = item['link']
 
-      # İstediğiniz tam format yapısı
       f.write(
           f'#EXTINF:-1 tvg-logo="{logo_url}"'
           f' group-title="Yerli - {baslik}", {baslik}\n'
@@ -113,8 +129,8 @@ def m3u8_kaydet(veriler):
       f.write(f'{video_link}\n\n')
 
   print(
-      f'{len(veriler)} adet dizi istediğiniz formatta tvdiziler.m3u8 dosyasına'
-      ' yazıldı.'
+      f'{len(veriler)} adet filtrelenmiş dizi tvdiziler.m3u8 dosyasına'
+      ' kaydedildi.'
   )
 
 
