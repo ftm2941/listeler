@@ -1,4 +1,3 @@
-import json
 import os
 from bs4 import BeautifulSoup
 import requests
@@ -10,13 +9,12 @@ def dizileri_cek():
   headers = {
       'User-Agent': (
           'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
-          'AppleWebKit/537.36 (KHTML, like Gecko) '
+          'Appleylobacter/537.36 (KHTML, like Gecko) '
           'Chrome/122.0.0.0 Safari/537.36'
       )
   }
 
   try:
-    # 10 saniye içinde yanıt gelmezse hata verir, böylece sonsuza kadar takılı kalmaz
     response = requests.get(URL, headers=headers, timeout=10)
     response.raise_for_status()
 
@@ -35,11 +33,29 @@ def dizileri_cek():
             )
         )
 
+        # Dizi afiş görselini bulmaya çalışalım
+        img_elem = kart.find('img')
+        logo = ''
+        if img_elem:
+          # Genellikle 'src' ya da lazy-load için 'data-src' kullanılır
+          logo = (
+              img_elem.get('data-src')
+              or img_elem.get('src')
+              or img_elem.get('data-lazy-src')
+              or ''
+          )
+          if logo.startswith('/'):
+            logo = 'https://tvdiziler.tv' + logo
+          elif logo and not logo.startswith('http'):
+            logo = 'https://tvdiziler.tv/' + logo
+
         if baslik and len(baslik) > 2:
           if link.startswith('/'):
             link = 'https://tvdiziler.tv' + link
+          elif not link.startswith('http'):
+            link = 'https://tvdiziler.tv/' + link
 
-          dizi_listesi.append({'baslik': baslik, 'link': link})
+          dizi_listesi.append({'baslik': baslik, 'link': link, 'logo': logo})
 
     unique_diziler = {d['link']: d for d in dizi_listesi}.values()
     return list(unique_diziler)
@@ -49,14 +65,31 @@ def dizileri_cek():
     return []
 
 
-def kaydet(veriler):
-  dosya = 'tvdiziler.json'
+def m3u_kaydet(veriler):
+  dosya = 'tvdiziler.m3u'
   with open(dosya, 'w', encoding='utf-8') as f:
-    json.dump(veriler, f, ensure_ascii=False, indent=4)
-  print(f'{len(veriler)} adet dizi bilgisi başarıyla kaydedildi.')
+    f.write('#EXTM3U\n')
+    for item in veriler:
+      temiz_baslik = (
+          item['baslik'].replace('\n', ' ').replace('\r', '').strip()
+      )
+      logo_url = item['logo']
+
+      # IPTV oynatıcılarının okuyacağı gelişmiş EXTINF etiketi
+      # tvg-logo: Afiş görseli, group-title: Oynatıcıdaki kategori grubu
+      f.write(
+          f'#EXTINF:-1 tvg-name="{temiz_baslik}" tvg-logo="{logo_url}"'
+          f' group-title="TvDiziler",{temiz_baslik}\n'
+      )
+      f.write(f"{item['link']}\n")
+
+  print(
+      f'{len(veriler)} adet dizi bilgisi afişleri ile birlikte M3U formatında'
+      ' kaydedildi.'
+  )
 
 
 if __name__ == '__main__':
   veriler = dizileri_cek()
   if veriler:
-    kaydet(veriler)
+    m3u_kaydet(veriler)
