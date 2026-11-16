@@ -7,10 +7,7 @@ URL = 'https://tvdiziler.tv/'
 
 
 def temizle_baslik(ham_baslik):
-  # "Uzak Şehir izleUzak Şehir 73.Bölüm izleBugün" gibi birleşik metinleri çözelim
   temiz = ham_baslik.replace('\n', ' ').replace('\r', '').strip()
-
-  # Tarih, Bugün, Dün ve 'izle' kelimelerini atalım
   temiz = re.sub(
       r'(Bugün|Dün|\d{1,2}\s+[A-Za-z]+\s+\d{4}|\d{1,2}\s+[Kk]asım|\d{1,2}\s+[Aa]ralık|\d{1,2}\s+[Oo]cak|\d{1,2}\s+[Şş]ubat|\d{1,2}\s+[Mm]art|\d{1,2}\s+[Nn]isan|\d{1,2}\s+[Mm]ayıs|\d{1,2}\s+[Hh]aziran|\d{1,2}\s+[Tt]emmuz|\d{1,2}\s+[Aa]ğustos|\d{1,2}\s+[Ee]ylül|\d{1,2}\s+[Ee]kim)',
       '',
@@ -22,15 +19,44 @@ def temizle_baslik(ham_baslik):
       .replace('FULL', '')
       .replace('Full', '')
   )
-
-  # Tekrarlayan kelime gruplarını ayıkla
   parcalar = temiz.split()
   if len(parcalar) > 4:
     yari = int(len(parcalar) / 2)
     if parcalar[:yari] == parcalar[yari : yari * 2]:
       temiz = ' '.join(parcalar[:yari])
-
   return temiz.strip() if temiz else 'Dizi Bölümü'
+
+
+def ham_video_bul(detay_link, headers):
+  """Detay sayfasına girip oynatıcıdaki ham video uzantısını (.m3u8 / .mp4) yakalar"""
+  try:
+    resp = requests.get(detay_link, headers=headers, timeout=5)
+    if resp.status_code == 200:
+      soup = BeautifulSoup(resp.text, 'html.parser')
+
+      # 1. <video> etiketi kontrolü
+      video_tag = soup.find('video')
+      if video_tag and video_tag.get('src'):
+        return video_tag.get('src')
+
+      # 2. <iframe> veya oynatıcı kaynakları kontrolü
+      iframe_tag = soup.find('iframe')
+      if iframe_tag and iframe_tag.get('src'):
+        iframe_src = iframe_tag.get('src')
+        # Eğer iframe içinde m3u8 varsa doğrudan döndür
+        if '.m3u8' in iframe_src or '.mp4' in iframe_src:
+          return iframe_src
+
+      # 3. Sayfa kaynak kodundaki scriptler içinde .m3u8 arama
+      for script in soup.find_all('script'):
+        script_text = script.string or ''
+        match = re.search(r'https?://[^\s<>"]+?\.(?:m3u8|mp4)', script_text)
+        if match:
+          return match.group(0)
+  except Exception:
+    pass
+
+  return None
 
 
 def dizileri_cek():
@@ -49,18 +75,13 @@ def dizileri_cek():
     soup = BeautifulSoup(response.text, 'html.parser')
     dizi_listesi = []
 
-    # Sitedeki tüm linkleri tarıyoruz
     for a_tag in soup.find_all('a', href=True):
       link = a_tag['href']
       baslik = a_tag.get_text(strip=True)
 
-      # -------------------------------------------------------------
-      # KESİN KURAL: Linkte 'bolum' geçmiyorsa bu bir dizi değildir, at!
-      # -------------------------------------------------------------
       if 'bolum' not in link:
         continue
 
-      # İçinde resim (afiş) barındıran kartı bulalım
       kart = a_tag.find_parent(['article', 'div', 'li'])
       img_elem = kart.find('img') if kart else a_tag.find('img')
 
@@ -73,7 +94,6 @@ def dizileri_cek():
             or ''
         )
 
-      # Afiş yoksa veya site dışıysa atla
       if not logo or 'uploads/series' not in logo:
         continue
 
@@ -89,7 +109,17 @@ def dizileri_cek():
 
       temiz_ad = temizle_baslik(baslik)
 
-      dizi_listesi.append({'baslik': temiz_ad, 'link': link, 'logo': logo})
+      # Detay sayfasına gidip ham video linkini çekmeye çalışalım
+      ham_link = ham_video_bul(link, headers)
+      
+      # Eğer ham video linki bulunamazsa yedek olarak detay linkini tutar
+      oynatilacak_link = ham_link if ham_link else link
+
+      dizi_listesi.append({
+          'baslik': temiz_ad,
+          'link': oynatilacak_link,
+          'logo': logo,
+      })
 
     unique_diziler = {d['link']: d for d in dizi_listesi}.values()
     return list(unique_diziler)
@@ -116,7 +146,8 @@ def m3u8_kaydet(veriler):
       f.write(f'{video_link}\n\n')
 
   print(
-      f'{len(veriler)} adet tertemiz dizi tvdiziler.m3u8 dosyasına kaydedildi.'
+      f'{len(veriler)} adet dizi ham oynatma bağlantılarıyla tvdiziler.m3u8'
+      ' dosyasına kaydedildi.'
   )
 
 
