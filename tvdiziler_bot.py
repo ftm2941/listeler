@@ -28,31 +28,36 @@ def temizle_baslik(ham_baslik):
 
 
 def ham_video_bul(detay_link, headers):
-  """Detay sayfasına girip oynatıcıdaki ham video uzantısını (.m3u8 / .mp4) yakalar"""
+  """Detay sayfasına girip Yandex storage veya ham .mp4 / .m3u8 linkini yakalar"""
   try:
-    resp = requests.get(detay_link, headers=headers, timeout=5)
+    resp = requests.get(detay_link, headers=headers, timeout=6)
     if resp.status_code == 200:
-      soup = BeautifulSoup(resp.text, 'html.parser')
+      html_icerik = resp.text
 
-      # 1. <video> etiketi kontrolü
+      # 1. Doğrudan Yandex storage veya mds linklerini arayalım
+      yandex_match = re.search(
+          r'https?://[^\s<>"]+?storage\.yandex\.net[^\s<>"]+', html_icerik
+      )
+      if yandex_match:
+        return yandex_match.group(0)
+
+      # 2. Genel .mp4 veya .m3u8 ham video linklerini arayalım
+      video_match = re.search(
+          r'https?://[^\s<>"]+?\.(?:m3u8|mp4)(?:\?[^\s<>"]*)?', html_icerik
+      )
+      if video_match:
+        return video_match.group(0)
+
+      # 3. BeautifulSoup ile <video> veya <iframe> kaynaklarını tarayalım
+      soup = BeautifulSoup(html_icerik, 'html.parser')
       video_tag = soup.find('video')
       if video_tag and video_tag.get('src'):
         return video_tag.get('src')
 
-      # 2. <iframe> veya oynatıcı kaynakları kontrolü
       iframe_tag = soup.find('iframe')
       if iframe_tag and iframe_tag.get('src'):
-        iframe_src = iframe_tag.get('src')
-        # Eğer iframe içinde m3u8 varsa doğrudan döndür
-        if '.m3u8' in iframe_src or '.mp4' in iframe_src:
-          return iframe_src
+        return iframe_tag.get('src')
 
-      # 3. Sayfa kaynak kodundaki scriptler içinde .m3u8 arama
-      for script in soup.find_all('script'):
-        script_text = script.string or ''
-        match = re.search(r'https?://[^\s<>"]+?\.(?:m3u8|mp4)', script_text)
-        if match:
-          return match.group(0)
   except Exception:
     pass
 
@@ -109,10 +114,10 @@ def dizileri_cek():
 
       temiz_ad = temizle_baslik(baslik)
 
-      # Detay sayfasına gidip ham video linkini çekmeye çalışalım
+      # Detay sayfasına gidip Yandex / ham video linkini çekmeye çalışalım
       ham_link = ham_video_bul(link, headers)
-      
-      # Eğer ham video linki bulunamazsa yedek olarak detay linkini tutar
+
+      # Eğer ham video bulunamazsa detay linkini yedek olarak tutar
       oynatilacak_link = ham_link if ham_link else link
 
       dizi_listesi.append({
@@ -140,13 +145,13 @@ def m3u8_kaydet(veriler):
 
       f.write(
           f'#EXTINF:-1 tvg-logo="{logo_url}"'
-          f' group-title="Yerli - {baslik}", {baslik}\n'
+          f' group-title="Yerli - {baslik}", {baslik} Son Bölüm\n'
       )
       f.write('#EXTVLCOPT:http-referrer=https://tvdiziler.tv\n')
       f.write(f'{video_link}\n\n')
 
   print(
-      f'{len(veriler)} adet dizi ham oynatma bağlantılarıyla tvdiziler.m3u8'
+      f'{len(veriler)} adet dizi Yandex/ham bağlantılarıyla tvdiziler.m3u8'
       ' dosyasına kaydedildi.'
   )
 
