@@ -21,7 +21,11 @@ def dizileri_cek():
     soup = BeautifulSoup(response.text, 'html.parser')
     dizi_listesi = []
 
-    for kart in soup.select('.card, .dizi-kutusu, article, li'):
+    # Sadece dizi kartlarının veya son bölüm listelerinin bulunduğu alanları hedefleyelim
+    # Site yapısındaki ana içerik kapsayıcılarını tarıyoruz
+    for kart in soup.select(
+        '.card, .dizi-kutusu, article, .col-xl-2, .col-lg-3, .col-md-4'
+    ):
       baslik_elem = kart.find(['h2', 'h3', 'a', 'span'])
       if baslik_elem:
         baslik = baslik_elem.get_text(strip=True)
@@ -33,21 +37,46 @@ def dizileri_cek():
             )
         )
 
-        img_elem = kart.find('img')
-        logo = ''
-        if img_elem:
-          logo = (
-              img_elem.get('data-src')
-              or img_elem.get('src')
-              or img_elem.get('data-lazy-src')
-              or ''
-          )
-          if logo.startswith('/'):
-            logo = 'https://tvdiziler.tv' + logo
-          elif logo and not logo.startswith('http'):
-            logo = 'https://tvdiziler.tv/' + logo
+        # -------------------------------------------------------------
+        # FİLTRELEME: Menü linklerini, profilleri ve puanları dışarıda bırakalım
+        # -------------------------------------------------------------
+        haric_kelimeler = [
+            'anasayfa',
+            'keşfet',
+            'takvim',
+            'dizi listesi',
+            'sinema',
+            'tartışma',
+            'oyuncu',
+            'level',
+            'puan',
+            'giriş yap',
+            'kayıt ol',
+            'facebook',
+            'twitter',
+            'instagram',
+        ]
 
-        if baslik and len(baslik) > 2:
+        baslik_kucuk = baslik.lower()
+        if any(kelime in baslik_kucuk for kelime in haric_kelimeler):
+          continue  # Bu başlıkları atla
+
+        # Sadece gerçek dizi/bölüm niteliği taşıyanları alalım
+        if baslik and len(baslik) > 3:
+          img_elem = kart.find('img')
+          logo = ''
+          if img_elem:
+            logo = (
+                img_elem.get('data-src')
+                or img_elem.get('src')
+                or img_elem.get('data-lazy-src')
+                or ''
+            )
+            if logo.startswith('/'):
+              logo = 'https://tvdiziler.tv' + logo
+            elif logo and not logo.startswith('http'):
+              logo = 'https://tvdiziler.tv/' + logo
+
           if link.startswith('/'):
             link = 'https://tvdiziler.tv' + link
           elif not link.startswith('http'):
@@ -64,7 +93,6 @@ def dizileri_cek():
 
 
 def m3u8_kaydet(veriler):
-  # Dosya uzantısını .m3u8 yaptık
   dosya = 'tvdiziler.m3u8'
   with open(dosya, 'w', encoding='utf-8') as f:
     f.write('#EXTM3U\n')
@@ -80,10 +108,7 @@ def m3u8_kaydet(veriler):
       )
       f.write(f"{item['link']}\n")
 
-  print(
-      f'{len(veriler)} adet dizi bilgisi tvdiziler.m3u8 olarak başarıyla'
-      ' kaydedildi.'
-  )
+  print(f'{len(veriler)} adet dizi başarıyla tvdiziler.m3u8 dosyasına yazıldı.')
 
 
 if __name__ == '__main__':
