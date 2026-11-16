@@ -16,7 +16,7 @@ def temizle_baslik(ham_baslik):
   temiz = re.sub(r'\d+\.Bölüm.*', '', temiz)
   temiz = re.sub(r'Son Bölüm.*', '', temiz)
 
-  # Kelime veya karakter bazlı tekrarlayan ikilenmeleri temizle
+  # Tekrarlayan kelime / karakter ikilenmelerini temizle
   uzunluk = len(temiz)
   if uzunluk > 4:
     yari = uzunluk // 2
@@ -35,18 +35,23 @@ def temizle_baslik(ham_baslik):
 
 
 def ham_video_bul(detay_link, headers):
-  """Detay sayfasına girip doğrudan .mp4 veya .m3u8 ham video bağlantısını arar"""
+  """Detay sayfasındaki .m3u8 (twimg vb.), .mp4 ve Yandex storage linklerini yakalar"""
   try:
     resp = requests.get(detay_link, headers=headers, timeout=8)
     if resp.status_code == 200:
       html = resp.text
 
-      # Öncelikli olarak Yandex storage veya ham .mp4 / .m3u8 linklerini ara
-      video_match = re.search(r'https?://[^\s<>"]+?\.(?:m3u8|mp4)(?:\?[^\s<>"]*)?', html)
-      if video_match:
-        return video_match.group(0).rstrip('"\'\\')
+      # 1. Parametreli veya parametresiz .m3u8 linklerini yakala (twimg vb. dahil)
+      m3u8_match = re.search(r'https?://[^\s<>"]+?\.m3u8(?:\?[^\s<>"]*)?', html)
+      if m3u8_match:
+        return m3u8_match.group(0).rstrip('"\'\\')
 
-      # Yandex mds / storage özel formatı
+      # 2. .mp4 video bağlantılarını yakala
+      mp4_match = re.search(r'https?://[^\s<>"]+?\.mp4(?:\?[^\s<>"]*)?', html)
+      if mp4_match:
+        return mp4_match.group(0).rstrip('"\'\\')
+
+      # 3. Yandex storage linkleri
       yandex_match = re.search(r'https?://[^\s<>"]+?storage\.yandex\.net[^\s<>"]+', html)
       if yandex_match:
         return yandex_match.group(0).rstrip('"\'\\')
@@ -108,7 +113,7 @@ def dizileri_cek():
 
       temiz_ad = temizle_baslik(baslik)
 
-      # Detay sayfasına girip .mp4 / .m3u8 ham video bağlantısını çekiyoruz
+      # Detay sayfasına girip .m3u8 / .mp4 / twimg ham video bağlantısını çekiyoruz
       ham_link = ham_video_bul(link, headers)
       oynatilacak_link = ham_link if ham_link else link
 
@@ -131,7 +136,6 @@ def m3u8_kaydet(veriler):
   with open(dosya, 'w', encoding='utf-8') as f:
     f.write('#EXTM3U\n')
     for item in veriler:
-      # Başlığı burada garanti olması için bir kez daha temizliyoruz
       baslik = temizle_baslik(item['baslik'])
       logo_url = item['logo']
       video_link = item['link']
