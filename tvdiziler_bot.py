@@ -16,21 +16,12 @@ def dizileri_cek():
   }
 
   try:
-    response = requests.get(URL, headers=headers)
+    # 10 saniye içinde yanıt gelmezse hata verir, böylece sonsuza kadar takılı kalmaz
+    response = requests.get(URL, headers=headers, timeout=10)
     response.raise_for_status()
 
     soup = BeautifulSoup(response.text, 'html.parser')
     dizi_listesi = []
-
-    # Sitedeki son eklenen bölümlerin veya dizi kartlarının bulunduğu alanları seçiyoruz
-    # Not: Sitenin güncel HTML etiket yapısına göre buradaki class isimleri güncellenebilir.
-    bolum_kartlari = soup.find_all(
-        'div', class_='col-xl-2'
-    )  # Örnek kart yapısı
-
-    if not bolum_kartlari:
-      # Alternatif olarak genel başlıkları tarayalım
-      bolum_kartlari = soup.find_all('article')
 
     for kart in soup.select('.card, .dizi-kutusu, article, li'):
       baslik_elem = kart.find(['h2', 'h3', 'a', 'span'])
@@ -45,13 +36,11 @@ def dizileri_cek():
         )
 
         if baslik and len(baslik) > 2:
-          # Göreceli linkleri tam URL'ye çevirelim
           if link.startswith('/'):
             link = 'https://tvdiziler.tv' + link
 
           dizi_listesi.append({'baslik': baslik, 'link': link})
 
-    # Tekrarlayan kayıtları temizle
     unique_diziler = {d['link']: d for d in dizi_listesi}.values()
     return list(unique_diziler)
 
