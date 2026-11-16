@@ -9,7 +9,7 @@ def dizileri_cek():
   headers = {
       'User-Agent': (
           'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
-          'Appleylobacter/537.36 (KHTML, like Gecko) '
+          'AppleWebKit/537.36 (KHTML, like Gecko) '
           'Chrome/122.0.0.0 Safari/537.36'
       )
   }
@@ -33,11 +33,9 @@ def dizileri_cek():
             )
         )
 
-        # Dizi afiş görselini bulmaya çalışalım
         img_elem = kart.find('img')
         logo = ''
         if img_elem:
-          # Genellikle 'src' ya da lazy-load için 'data-src' kullanılır
           logo = (
               img_elem.get('data-src')
               or img_elem.get('src')
@@ -65,8 +63,9 @@ def dizileri_cek():
     return []
 
 
-def m3u_kaydet(veriler):
-  dosya = 'tvdiziler.m3u'
+def m3u8_kaydet(veriler):
+  # Dosya uzantısını .m3u8 yaptık
+  dosya = 'tvdiziler.m3u8'
   with open(dosya, 'w', encoding='utf-8') as f:
     f.write('#EXTM3U\n')
     for item in veriler:
@@ -75,8 +74,6 @@ def m3u_kaydet(veriler):
       )
       logo_url = item['logo']
 
-      # IPTV oynatıcılarının okuyacağı gelişmiş EXTINF etiketi
-      # tvg-logo: Afiş görseli, group-title: Oynatıcıdaki kategori grubu
       f.write(
           f'#EXTINF:-1 tvg-name="{temiz_baslik}" tvg-logo="{logo_url}"'
           f' group-title="TvDiziler",{temiz_baslik}\n'
@@ -84,7 +81,7 @@ def m3u_kaydet(veriler):
       f.write(f"{item['link']}\n")
 
   print(
-      f'{len(veriler)} adet dizi bilgisi afişleri ile birlikte M3U formatında'
+      f'{len(veriler)} adet dizi bilgisi tvdiziler.m3u8 olarak başarıyla'
       ' kaydedildi.'
   )
 
@@ -92,4 +89,4 @@ def m3u_kaydet(veriler):
 if __name__ == '__main__':
   veriler = dizileri_cek()
   if veriler:
-    m3u_kaydet(veriler)
+    m3u8_kaydet(veriler)
