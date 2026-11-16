@@ -7,16 +7,21 @@ URL = 'https://tvdiziler.tv/'
 
 
 def temizle_baslik(ham_baslik):
-  """Başlıktaki tekrarlayan birleşmeleri ve çöpleri kusursuz şekilde temizler"""
   temiz = ham_baslik.replace('\n', ' ').replace('\r', '').strip()
-  
-  # Tarihleri, Bugün, Dün, izle ve benzeri ifadeleri kaldır
-  temiz = re.sub(r'(Bugün|Dün|\d{1,2}\s+[A-Za-z]+\s+\d{4}|\d{1,2}\s+[Kk]asım|\d{1,2}\s+[Aa]ralık|\d{1,2}\s+[Oo]cak|\d{1,2}\s+[Şş]ubat|\d{1,2}\s+[Mm]art|\d{1,2}\s+[Nn]isan|\d{1,2}\s+[Mm]ayıs|\d{1,2}\s+[Hh]aziran|\d{1,2}\s+[Tt]emmuz|\d{1,2}\s+[Aa]ğustos|\d{1,2}\s+[Ee]ylül|\d{1,2}\s+[Ee]kim)', '', temiz)
-  temiz = temiz.replace('izle', ' ').replace('İzle', ' ').replace('FULL', '').replace('Full', '')
+  temiz = re.sub(
+      r'(Bugün|Dün|\d{1,2}\s+[A-Za-z]+\s+\d{4}|\d{1,2}\s+[Kk]asım|\d{1,2}\s+[Aa]ralık|\d{1,2}\s+[Oo]cak|\d{1,2}\s+[Şş]ubat|\d{1,2}\s+[Mm]art|\d{1,2}\s+[Nn]isan|\d{1,2}\s+[Mm]ayıs|\d{1,2}\s+[Hh]aziran|\d{1,2}\s+[Tt]emmuz|\d{1,2}\s+[Aa]ğustos|\d{1,2}\s+[Ee]ylül|\d{1,2}\s+[Ee]kim)',
+      '',
+      temiz,
+  )
+  temiz = (
+      temiz.replace('izle', ' ')
+      .replace('İzle', ' ')
+      .replace('FULL', '')
+      .replace('Full', '')
+  )
   temiz = re.sub(r'\d+\.Bölüm.*', '', temiz)
   temiz = re.sub(r'Son Bölüm.*', '', temiz)
 
-  # Tekrarlayan kelime / karakter ikilenmelerini temizle
   uzunluk = len(temiz)
   if uzunluk > 4:
     yari = uzunluk // 2
@@ -26,38 +31,71 @@ def temizle_baslik(ham_baslik):
       kelimeler = temiz.split()
       if len(kelimeler) >= 4 and len(kelimeler) % 2 == 0:
         orta = len(kelimeler) // 2
-        p1 = " ".join(kelimeler[:orta])
-        p2 = " ".join(kelimeler[orta:])
+        p1 = ' '.join(kelimeler[:orta])
+        p2 = ' '.join(kelimeler[orta:])
         if p1.lower() == p2.lower():
           temiz = p1
 
   return temiz.strip() if temiz else 'Dizi Bölümü'
 
 
-def ham_video_bul(detay_link, headers):
-  """Detay sayfasındaki .m3u8 (twimg vb.), .mp4 ve Yandex storage linklerini yakalar"""
+def ham_video_bul(detay_link):
+  """Detay sayfasındaki dinamik script, m3u8 ve twimg ham linklerini yakalar"""
+  headers = {
+      'User-Agent': (
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+          'AppleWebKit/537.36 (KHTML, like Gecko) '
+          'Chrome/122.0.0.0 Safari/537.36'
+      ),
+      'Accept': (
+          'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8'
+      ),
+      'Referer': URL,
+      'X-Requested-With': 'XMLHttpRequest',
+  }
+
   try:
-    resp = requests.get(detay_link, headers=headers, timeout=8)
+    resp = requests.get(detay_link, headers=headers, timeout=10)
     if resp.status_code == 200:
       html = resp.text
 
-      # 1. Parametreli veya parametresiz .m3u8 linklerini yakala (twimg vb. dahil)
-      m3u8_match = re.search(r'https?://[^\s<>"]+?\.m3u8(?:\?[^\s<>"]*)?', html)
+      # 1. Doğrudan twimg veya herhangi bir m3u8 linkini arayalım (Örn: video.twimg.com/...m3u8?tag=...)
+      m3u8_match = re.search(
+          r'https?://[^\s<>"]+?\.m3u8(?:\?[^\s<>"]*)?', html
+      )
       if m3u8_match:
-        return m3u8_match.group(0).rstrip('"\'\\')
+        link = m3u8_match.group(0).rstrip('"\'\\')
+        # Eğer tırnak içinde veya escape edilmişse temizle
+        link = link.replace('\\/', '/')
+        return link
 
-      # 2. .mp4 video bağlantılarını yakala
+      # 2. .mp4 video bağlantılarını arayalım
       mp4_match = re.search(r'https?://[^\s<>"]+?\.mp4(?:\?[^\s<>"]*)?', html)
       if mp4_match:
-        return mp4_match.group(0).rstrip('"\'\\')
+        link = mp4_match.group(0).rstrip('"\'\\').replace('\\/', '/')
+        return link
 
       # 3. Yandex storage linkleri
-      yandex_match = re.search(r'https?://[^\s<>"]+?storage\.yandex\.net[^\s<>"]+', html)
+      yandex_match = re.search(
+          r'https?://[^\s<>"]+?storage\.yandex\.net[^\s<>"]+', html
+      )
       if yandex_match:
-        return yandex_match.group(0).rstrip('"\'\\')
+        link = yandex_match.group(0).rstrip('"\'\\').replace('\\/', '/')
+        return link
 
-  except Exception:
-    pass
+      # 4. Script etiketlerinin içinde javascript ile gizlenmiş URL'leri taranması
+      soup = BeautifulSoup(html, 'html.parser')
+      for script in soup.find_all('script'):
+        script_text = script.string or ''
+        if '.m3u8' in script_text or '.mp4' in script_text:
+          match = re.search(
+              r'https?://[^\s<>"]+?\.(?:m3u8|mp4)(?:\?[^\s<>"]*)?', script_text
+          )
+          if match:
+            return match.group(0).rstrip('"\'\\').replace('\\/', '/')
+
+  except Exception as e:
+    print(f'Ham video aranırken hata: {e}')
 
   return None
 
@@ -69,7 +107,7 @@ def dizileri_cek():
           'AppleWebKit/537.36 (KHTML, like Gecko) '
           'Chrome/122.0.0.0 Safari/537.36'
       ),
-      'Referer': 'https://tvdiziler.tv/'
+      'Referer': URL,
   }
 
   try:
@@ -113,13 +151,16 @@ def dizileri_cek():
 
       temiz_ad = temizle_baslik(baslik)
 
-      # Detay sayfasına girip .m3u8 / .mp4 / twimg ham video bağlantısını çekiyoruz
-      ham_link = ham_video_bul(link, headers)
-      oynatilacak_link = ham_link if ham_link else link
+      # Detay sayfasına arka planda girip ham video linkini çekiyoruz
+      ham_link = ham_video_bul(link)
+
+      # Eğer ham link bulunamazsa, kullanıcı istemediği için bu kartı atlıyoruz (site linki yazmıyoruz)
+      if not ham_link:
+        continue
 
       dizi_listesi.append({
           'baslik': temiz_ad,
-          'link': oynatilacak_link,
+          'link': ham_link,
           'logo': logo,
       })
 
