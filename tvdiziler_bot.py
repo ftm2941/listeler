@@ -7,22 +7,39 @@ URL = 'https://tvdiziler.tv/'
 
 
 def temizle_baslik(ham_baslik):
+  """Başlıktaki tekrarlayan birleşmeleri ve çöpleri kusursuz şekilde temizler"""
   temiz = ham_baslik.replace('\n', ' ').replace('\r', '').strip()
+  
+  # Tarihleri, Bugün, Dün, izle ve benzeri ifadeleri kaldır
   temiz = re.sub(r'(Bugün|Dün|\d{1,2}\s+[A-Za-z]+\s+\d{4}|\d{1,2}\s+[Kk]asım|\d{1,2}\s+[Aa]ralık|\d{1,2}\s+[Oo]cak|\d{1,2}\s+[Şş]ubat|\d{1,2}\s+[Mm]art|\d{1,2}\s+[Nn]isan|\d{1,2}\s+[Mm]ayıs|\d{1,2}\s+[Hh]aziran|\d{1,2}\s+[Tt]emmuz|\d{1,2}\s+[Aa]ğustos|\d{1,2}\s+[Ee]ylül|\d{1,2}\s+[Ee]kim)', '', temiz)
   temiz = temiz.replace('izle', ' ').replace('İzle', ' ').replace('FULL', '').replace('Full', '')
   temiz = re.sub(r'\d+\.Bölüm.*', '', temiz)
+  temiz = re.sub(r'Son Bölüm.*', '', temiz)
 
-  kelimeler = temiz.split()
-  if len(kelimeler) >= 4:
-    yari = int(len(kelimeler) / 2)
-    if " ".join(kelimeler[:yari]).lower() == " ".join(kelimeler[yari:]).lower():
-      temiz = " ".join(kelimeler[:yari])
+  # "Altı Üstü İstanbulAltı Üstü istanbul" veya "MasterChef Türkiye 2026MasterChef 2026" gibi
+  # bitişik tekrarları ortadan ikiye bölerek teke indiriyoruz:
+  uzunluk = len(temiz)
+  if uzunluk > 4:
+    yari = uzunluk // 2
+    birinci_parca = temiz[:yari].strip()
+    ikinci_parca = temiz[yari:].strip()
+    if birinci_parca.lower() == ikinci_parca.lower():
+      temiz = birinci_parca
+    else:
+      # Kelime kelime kontrol
+      kelimeler = temiz.split()
+      if len(kelimeler) >= 4 and len(kelimeler) % 2 == 0:
+        orta = len(kelimeler) // 2
+        p1 = " ".join(kelimeler[:orta])
+        p2 = " ".join(kelimeler[orta:])
+        if p1.lower() == p2.lower():
+          temiz = p1
 
   return temiz.strip() if temiz else 'Dizi Bölümü'
 
 
 def ham_video_bul(detay_link, headers):
-  """Detay sayfasına arka planda girip Yandex storage veya ham .mp4 / .m3u8 linkini yakalar"""
+  """Detay sayfasına girip Yandex storage veya ham .mp4 / .m3u8 linkini yakalar"""
   try:
     resp = requests.get(detay_link, headers=headers, timeout=8)
     if resp.status_code == 200:
@@ -104,8 +121,6 @@ def dizileri_cek():
 
       # Detay sayfasına arka planda girip ham video linkini çözüyoruz
       ham_link = ham_video_bul(link, headers)
-      
-      # Eğer ham link çözülebildiyse doğrudan onu yazıyoruz, böylece player direkt açılır
       oynatilacak_link = ham_link if ham_link else link
 
       dizi_listesi.append({
@@ -131,16 +146,16 @@ def m3u8_kaydet(veriler):
       logo_url = item['logo']
       video_link = item['link']
 
-      # Kategorize ve doğrudan player uyumlu yapı
+      # Başlıkların ve grup isimlerinin tertemiz yazılması
       f.write(
           f'#EXTINF:-1 tvg-logo="{logo_url}"'
-          f' group-title="Yeni Bölümler | {baslik}", {baslik} Son Bölüm\n'
+          f' group-title="Yeni Bölümler | {baslik}", {baslik}\n'
       )
       f.write('#EXTVLCOPT:http-referrer=https://tvdiziler.tv\n')
       f.write(f'{video_link}\n\n')
 
   print(
-      f'{len(veriler)} adet ham video bağlantılı dizi tvdiziler.m3u8 dosyasına'
+      f'{len(veriler)} adet tertemiz dizi bağlantısı tvdiziler.m3u8 dosyasına'
       ' kaydedildi.'
   )
 
