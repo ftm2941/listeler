@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dosya Aktar — Gizlilik Politikası / Privacy Policy</title>
+<style>
+  :root { --ink:#16202c; --muted:#5b6b7d; --line:#e2e8ef; --accent:#0aa7a7; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    max-width: 840px; margin: 0 auto; padding: 28px 22px 64px;
+    line-height: 1.68; color: var(--ink); background: #fff;
+  }
+  header { border-bottom: 1px solid var(--line); padding-bottom: 18px; margin-bottom: 8px; }
+  h1 { font-size: 27px; margin: 0 0 6px; letter-spacing: -.2px; }
+  .sub { color: var(--muted); font-size: 14px; }
+  .langs { position: sticky; top: 0; background: #fff; padding: 12px 0; border-bottom: 1px solid var(--line); z-index: 5; }
+  .langs button {
+    font: inherit; font-size: 14px; cursor: pointer; padding: 7px 16px; margin-right: 8px;
+    border: 1px solid var(--line); border-radius: 999px; background: #fff; color: var(--ink);
+  }
+  .langs button.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  h2 { font-size: 18px; margin: 30px 0 8px; }
+  ul { padding-left: 22px; }
+  li { margin: 4px 0; }
+  code { background: #f2f5f8; padding: 1px 5px; border-radius: 4px; font-size: 13px; }
+  .muted { color: var(--muted); }
+  .box { background: #f6fafb; border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+  footer { margin-top: 44px; padding-top: 16px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Dosya Aktar — Gizlilik Politikası</h1>
+  <div class="sub">Privacy Policy · Son güncelleme / Last updated: 18 Kasım 2026</div>
+</header>
+
+<div class="langs">
+  <button id="btn-tr" class="active" onclick="setLang('tr')">Türkçe</button>
+  <button id="btn-en" onclick="setLang('en')">English</button>
+</div>
+
+<!-- ================= TÜRKÇE ================= -->
+<section id="doc-tr" lang="tr">
+
+  <p>Bu gizlilik politikası, <strong>Dosya Aktar</strong> Android uygulamasının
+  (<code>com.dosyaaktar</code>) kişisel verileri nasıl işlediğini açıklar.
+  Uygulamayı kullanarak bu politikayı kabul etmiş olursunuz.</p>
+
+  <div class="box">
+    <strong>Kısaca:</strong> Uygulama hiçbir kişisel veriyi toplamaz, sunucuya göndermez ve satmaz.
+    Dosya aktarımı yalnızca aynı Wi-Fi ağındaki cihazlar arasında, doğrudan cihazdan cihaza yapılır.
+  </div>
+
+  <h2>1. İşlenen veriler</h2>
+  <p>Uygulama; ad, e-posta, telefon numarası, konum, kişi listesi, cihaz kimliği veya reklam kimliği gibi
+  kişisel verileri <strong>toplamaz ve saklamaz</strong>. Hesap oluşturma, kayıt veya bulut yedekleme yoktur.</p>
+  <p>Aktardığınız dosyalar yalnızca seçtiğiniz alıcı cihaza gönderilir; hiçbir ara sunucudan geçmez ve
+  geliştirici tarafından erişilemez. Alınan dosyalar cihazınızda <code>İndirilenler/DosyaAktar</code>
+  klasörüne kaydedilir.</p>
+
+  <h2>2. Yerel ağ kullanımı</h2>
+  <p>Aktarım için cihazınızın yerel ağ üzerinde görünür olması gerekir. Bu amaçla uygulama yalnızca
+  yerel ağ (LAN) üzerinde çalışan bir servis ve QR kod ile bağlantı özelliği kullanır. Bu veriler
+  cihazınızdan dışarı çıkmaz.</p>
+
+  <h2>3. İstenen izinler ve gerekçeleri</h2>
+  <ul>
+    <li><strong>İnternet / Ağ durumu / Wi-Fi durumu:</strong> Yerel ağdaki cihazları bulmak ve dosya aktarmak için.</li>
+    <li><strong>Wi-Fi çoklu yayın (multicast):</strong> Aynı ağdaki cihazların birbirini keşfetmesi için.</li>
+    <li><strong>Bildirimler:</strong> Aktarım ilerlemesini ve tamamlandı bilgisini göstermek için.</li>
+    <li><strong>Ön plan servisi (veri aktarımı):</strong> Aktarım sürerken uygulama arka plana alınsa bile işlemin devam etmesi için.</li>
+    <li><strong>Bilinmeyen uygulamaları yükleme (isteğe bağlı):</strong> Kullanıcı kendi isteğiyle bir APK dosyasını
+    kurmak istediğinde Android'in kurulum ekranını açmak için kullanılır. Otomatik kurulum yapılmaz;
+    her kurulum için Android onayı gerekir.</li>
+  </ul>
+  <p>Uygulama; kamera, mikrofon, konum, kişiler, SMS veya depolama alanındaki tüm dosyalara erişim izni istemez.</p>
+
+  <h2>4. Çerezler ve analitik</h2>
+  <p>Uygulama çerez kullanmaz, kullanım verisi toplamaz ve üçüncü taraf analitik veya çökme raporlama
+  hizmetlerine veri göndermez.</p>
+
+  <h2>5. Reklamlar</h2>
+  <p>Uygulamanın bu sürümünde reklam gösterilmemektedir. İleride reklam özelliği eklenirse bu politika,
+  reklam ortaklarının veri uygulamalarını da kapsayacak şekilde güncellenecek ve mağaza sayfasında
+  "Reklam içeriyor" bilgisi yayınlanacaktır.</p>
+
+  <h2>6. Çocukların gizliliği</h2>
+  <p>Uygulama 13 yaş altındaki çocuklara yönelik değildir ve çocuklardan bilerek veri toplamaz.</p>
+
+  <h2>7. Veri güvenliği</h2>
+  <p>Aktarım sırasında veriler yalnızca yerel ağda bulunur. Ortak (umumi) Wi-Fi ağlarında aktarım
+  yapılması önerilmez; güvenilir ağlarda kullanın.</p>
+
+  <h2>8. Politika değişiklikleri</h2>
+  <p>Bu politika güncellendiğinde bu sayfada yayımlanır ve "Son güncelleme" tarihi değiştirilir.</p>
+
+  <h2>9. İletişim</h2>
+  <p>Gizlilikle ilgili sorularınız için: <strong>ugur2941@gmail.com</strong></p>
+
+</section>
+
+<!-- ================= ENGLISH ================= -->
+<section id="doc-en" lang="en" style="display:none">
+
+  <p>This privacy policy explains how the <strong>Dosya Aktar</strong> Android application
+  (<code>com.dosyaaktar</code>) handles personal data. By using the app you accept this policy.</p>
+
+  <div class="box">
+    <strong>In short:</strong> the app does not collect, transmit or sell any personal data.
+    File transfers happen directly between devices on the same Wi-Fi network.
+  </div>
+
+  <h2>1. Data we process</h2>
+  <p>The app does <strong>not collect or store</strong> personal data such as name, e-mail address,
+  phone number, location, contacts, device identifiers or advertising ID. There is no account,
+  registration or cloud backup.</p>
+  <p>Files you send are delivered only to the receiving device you select. They never pass through
+  an intermediate server and are not accessible to the developer. Received files are saved on your
+  device in the <code>Downloads/DosyaAktar</code> folder.</p>
+
+  <h2>2. Local network usage</h2>
+  <p>To transfer files, your device must be discoverable on the local network. For this purpose the
+  app runs a service on the LAN and offers QR-code pairing. This data never leaves your device.</p>
+
+  <h2>3. Permissions and why they are needed</h2>
+  <ul>
+    <li><strong>Internet / network state / Wi-Fi state:</strong> to discover devices on the local network and transfer files.</li>
+    <li><strong>Wi-Fi multicast:</strong> so devices on the same network can discover each other.</li>
+    <li><strong>Notifications:</strong> to show transfer progress and completion.</li>
+    <li><strong>Foreground service (data sync):</strong> so a transfer keeps running when the app is in the background.</li>
+    <li><strong>Install unknown apps (optional):</strong> used only to open the Android installer when the user chooses to
+    install a received APK file. No silent installation occurs; Android asks for confirmation every time.</li>
+  </ul>
+  <p>The app does not request access to the camera, microphone, location, contacts, SMS or all files in storage.</p>
+
+  <h2>4. Cookies and analytics</h2>
+  <p>The app uses no cookies, collects no usage data, and sends no data to third-party analytics or
+  crash-reporting services.</p>
+
+  <h2>5. Advertising</h2>
+  <p>This version of the app shows no ads. If advertising is added in the future, this policy will be
+  updated to cover the data practices of our advertising partners and the store listing will be
+  marked as "Contains ads".</p>
+
+  <h2>6. Children's privacy</h2>
+  <p>The app is not directed to children under 13 and does not knowingly collect data from children.</p>
+
+  <h2>7. Data security</h2>
+  <p>During transfer, data exists only on the local network. Transferring over public Wi-Fi is not
+  recommended; use trusted networks.</p>
+
+  <h2>8. Policy changes</h2>
+  <p>If this policy changes, the updated version will be published on this page and the
+  "Last updated" date will be revised.</p>
+
+  <h2>9. Contact</h2>
+  <p>For privacy questions: <strong>ugur2941@gmail.com</strong></p>
+
+</section>
+
+<footer>Dosya Aktar · com.dosyaaktar</footer>
+
+<script>
+  function setLang(lang) {
+    var tr = document.getElementById('doc-tr');
+    var en = document.getElementById('doc-en');
+    var btr = document.getElementById('btn-tr');
+    var ben = document.getElementById('btn-en');
+    var isTr = lang === 'tr';
+    tr.style.display = isTr ? 'block' : 'none';
+    en.style.display = isTr ? 'none' : 'block';
+    btr.className = isTr ? 'active' : '';
+    ben.className = isTr ? '' : 'active';
+    document.documentElement.lang = isTr ? 'tr' : 'en';
+    try { history.replaceState(null, '', isTr ? '#tr' : '#en'); } catch (e) {}
+  }
+  if (location.hash === '#en') { setLang('en'); }
+</script>
+
+</body>
+</html>
