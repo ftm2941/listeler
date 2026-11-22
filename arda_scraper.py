@@ -1,7 +1,7 @@
 TARGET_URL = "https://selcuksports180.top"
-OUTPUT_FILE = "kanallar_arda.m3u8"
+OUTPUT_FILE = "kanallar.m3u8"
 
-# Kanal adı, URL kodu/yolu ve logosu
+# Kanal adı, URL kodu/yolu, tip ve logosu
 channels = [
     ("Bein Sports 1", "b1", "tracks", "https://resmim.net/cdn/2026/07/22/ETtrXH.png"),
     ("Bein Sports 2", "b2", "tracks", "https://resmim.net/cdn/2026/07/22/ETtrXH.png"),
@@ -19,6 +19,11 @@ channels = [
 
 BASE_DOMAIN = "https://css.d6e3eds5e065t5.help"
 
+# Özel stream yolu gereken kanallar için eşleştirme
+CUSTOM_PATHS = {
+    "b1": "beyin1",
+}
+
 def generate_playlist():
     m3u_lines = [
         "#EXTM3U",
@@ -33,7 +38,8 @@ def generate_playlist():
         if path_type == "hls":
             stream_url = f"{BASE_DOMAIN}/{code_or_path}"
         else:
-            stream_url = f"{BASE_DOMAIN}/{code_or_path}//beyin1/tracks-v1a1/mono.m3u8"
+            stream_code = CUSTOM_PATHS.get(code_or_path, code_or_path)
+            stream_url = f"{BASE_DOMAIN}//{stream_code}/tracks-v1a1/mono.m3u8"
             
         extinf = f'#EXTINF:-1 tvg-name="{name}" tvg-logo="{logo}" group-title="BeinSports",{name}'
         
@@ -42,7 +48,6 @@ def generate_playlist():
         valid_count += 1
         print(f"[+] Eklendi: {name} -> {stream_url}")
 
-    # Dosyaya kaydet
     with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
         f.write("\n".join(m3u_lines) + "\n")
     
