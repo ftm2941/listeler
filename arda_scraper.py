@@ -1,5 +1,5 @@
 TARGET_URL = "https://selcuksports180.top"
-OUTPUT_FILE = "kanallar.m3u8"
+OUTPUT_FILE = "kanallar_arda.m3u8"
 
 # Kanal adı, URL kodu/yolu, tip ve logosu
 channels = [
