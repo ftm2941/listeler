@@ -19,11 +19,6 @@ channels = [
 
 BASE_DOMAIN = "https://css.d6e3eds5e065t5.help"
 
-# Özel stream yolu gereken kanallar için eşleştirme
-CUSTOM_PATHS = {
-    "b1": "beyin1",
-}
-
 def generate_playlist():
     m3u_lines = [
         "#EXTM3U",
@@ -34,12 +29,13 @@ def generate_playlist():
     
     valid_count = 0
     
-    for name, code_or_path, path_type, logo in channels:
+    for idx, (name, code_or_path, path_type, logo) in enumerate(channels):
         if path_type == "hls":
             stream_url = f"{BASE_DOMAIN}/{code_or_path}"
+        elif idx == 0:
+            stream_url = f"{BASE_DOMAIN}//beyin1/tracks-v1a1/mono.m3u8"
         else:
-            stream_code = CUSTOM_PATHS.get(code_or_path, code_or_path)
-            stream_url = f"{BASE_DOMAIN}//{stream_code}/tracks-v1a1/mono.m3u8"
+            stream_url = f"{BASE_DOMAIN}//{code_or_path}/tracks-v1a1/mono.m3u8"
             
         extinf = f'#EXTINF:-1 tvg-name="{name}" tvg-logo="{logo}" group-title="BeinSports",{name}'
         
