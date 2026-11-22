@@ -33,7 +33,7 @@ def generate_playlist():
         if path_type == "hls":
             stream_url = f"{BASE_DOMAIN}/{code_or_path}"
         else:
-            stream_url = f"{BASE_DOMAIN}/{code_or_path}/tracks-v1a1/mono.m3u8"
+            stream_url = f"{BASE_DOMAIN}/{code_or_path}//beyin1/tracks-v1a1/mono.m3u8"
             
         extinf = f'#EXTINF:-1 tvg-name="{name}" tvg-logo="{logo}" group-title="BeinSports",{name}'
         
