@@ -1,65 +1,36 @@
-name: Update macozetleri.m3u8
+name: Update Mac Ozetleri M3U8
 
 on:
   schedule:
-    - cron: "0 */3 * * *" # Her 3 saatte bir (UTC)
+    - cron: "0 */6 * * *"
   workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
-  update-playlist:
+  update:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: Set up Python
+      - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install playwright
-          playwright install chromium
-          playwright install-deps chromium
+      - name: Scrape match summaries
+        run: python scrape_macozetleri.py
 
-      - name: Build macozetleri.m3u8
-        env:
-          SOURCE_URL: "https://beinsports.com.tr/mac-ozetleri-goller/super-lig"
-          OUTPUT_FILE: "macozetleri.m3u8"
-          MIN_DURATION_SEC: "540"
-          MAX_DURATION_SEC: "660"
-          REQUIRE_DURATION: "false"
-        run: |
-          python scripts/update_macozetleri.py
-
-      - name: Commit and push changes
+      - name: Commit and push if changed
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add macozetleri.m3u8
-          if git diff --staged --quiet; then
-            echo "Değişiklik yok, commit atlanıyor."
+          if git diff --quiet -- macozetleri.m3u8; then
+            echo "No changes"
             exit 0
           fi
-
-          git commit -m "chore: update macozetleri.m3u8 [skip ci]"
-
-          for attempt in 1 2 3; do
-            git pull --rebase --autostash origin main
-            if git push origin main; then
-              echo "Push başarılı."
-              exit 0
-            fi
-            echo "Push denemesi $attempt başarısız, tekrar deneniyor..."
-            sleep 2
-          done
-
-          echo "Tüm push denemeleri başarısız oldu."
-          exit 1
+          git add macozetleri.m3u8
+          git commit -m "chore: update mac ozetleri m3u8"
+          git push
