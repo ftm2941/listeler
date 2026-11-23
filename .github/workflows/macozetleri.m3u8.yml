@@ -33,8 +33,8 @@ jobs:
         env:
           SOURCE_URL: "https://beinsports.com.tr/mac-ozetleri-goller/super-lig"
           OUTPUT_FILE: "macozetleri.m3u8"
-          MIN_DURATION_SEC: "420"
-          MAX_DURATION_SEC: "480"
+          MIN_DURATION_SEC: "540"
+          MAX_DURATION_SEC: "660"
           REQUIRE_DURATION: "false"
         run: |
           python scripts/update_macozetleri.py
