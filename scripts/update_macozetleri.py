@@ -84,13 +84,6 @@ MEDIA_URL_RE = re.compile(
     re.IGNORECASE,
 )
 
-DURATION_FIELD_RE = re.compile(
-    r"\"?(?:duration|durationSec|durationSeconds|videoDuration|sure)\"?\s*[:=]\s*\"?(\d{2,4})\"?",
-    re.IGNORECASE,
-)
-
-MMSS_RE = re.compile(r"\b(?:0?[5-9]|1[0-5]):([0-5]\d)\b")
-
 NOISE_LINES = {
     "özeti izle",
     "ozeti izle",
@@ -171,20 +164,41 @@ def parse_card_from_lines(lines: list[str], index_num: int) -> dict[str, str]:
     }
 
 
-def extract_duration_seconds(text: str) -> int | None:
-    decoded = decode_escaped_text(text)
+def read_player_duration_seconds(target_page: Page) -> int | None:
+    """
+    Ana sayfa ve tüm iframe'lerdeki <video> oynatıcıların gerçek süresini okur.
+    """
+    frames = [target_page.main_frame] + [
+        f for f in target_page.frames if f != target_page.main_frame
+    ]
 
-    for m in DURATION_FIELD_RE.finditer(decoded):
-        val = int(m.group(1))
-        if 180 <= val <= 3600:
-            return val
-
-    for m in MMSS_RE.finditer(decoded):
-        full_match = m.group(0)
-        mins_str, secs_str = full_match.split(":")
-        total = int(mins_str) * 60 + int(secs_str)
-        if 180 <= total <= 3600:
-            return total
+    for frame in frames:
+        try:
+            dur = frame.evaluate(
+                """async () => {
+                    const videos = Array.from(document.querySelectorAll('video'));
+                    for (const v of videos) {
+                        if (Number.isFinite(v.duration) && v.duration > 0) {
+                            return Math.round(v.duration);
+                        }
+                        await new Promise((resolve) => {
+                            const timer = setTimeout(resolve, 1200);
+                            v.addEventListener('loadedmetadata', () => {
+                                clearTimeout(timer);
+                                resolve();
+                            }, { once: true });
+                        });
+                        if (Number.isFinite(v.duration) && v.duration > 0) {
+                            return Math.round(v.duration);
+                        }
+                    }
+                    return null;
+                }"""
+            )
+            if isinstance(dur, (int, float)) and dur > 0:
+                return int(round(dur))
+        except Exception:
+            continue
 
     return None
 
@@ -192,14 +206,14 @@ def extract_duration_seconds(text: str) -> int | None:
 def is_target_duration(duration_sec: int | None) -> tuple[bool, str]:
     if duration_sec is None:
         if REQUIRE_DURATION:
-            return False, "süre bilgisi yok"
-        return True, "süre bilgisi yok (izinli)"
+            return False, "oynatıcı süresi okunamadı"
+        return True, "oynatıcı süresi okunamadı (izinli)"
 
     if MIN_DURATION_SEC <= duration_sec <= MAX_DURATION_SEC:
-        return True, f"uygun süre ({duration_sec} sn)"
+        return True, f"oynatıcı süresi uygun ({duration_sec} sn)"
     return (
         False,
-        f"süre {duration_sec} sn ({MIN_DURATION_SEC}-{MAX_DURATION_SEC} sn dışında)",
+        f"oynatıcı süresi {duration_sec} sn ({MIN_DURATION_SEC}-{MAX_DURATION_SEC} sn dışında)",
     )
 
 
@@ -400,7 +414,6 @@ def scrape_with_playwright(source_url: str) -> list[dict[str, str]]:
                 continue
 
             captured_urls: list[str] = []
-            captured_texts: list[str] = []
 
             def on_request(req):
                 u = req.url
@@ -416,7 +429,6 @@ def scrape_with_playwright(source_url: str) -> list[dict[str, str]]:
                     try:
                         body = res.text()
                         if "akamaized.net" in body or ".mp4" in body or ".m3u8" in body:
-                            captured_texts.append(body)
                             captured_urls.extend(collect_media_from_text(body))
                     except Exception:
                         pass
@@ -441,16 +453,13 @@ def scrape_with_playwright(source_url: str) -> list[dict[str, str]]:
                 except Exception:
                     page.wait_for_timeout(1500)
 
-                combined_blob = "\n".join(captured_texts)
                 try:
                     dom_html = active_page.content()
-                    dom_text = active_page.inner_text("body")
-                    combined_blob += "\n" + dom_html + "\n" + dom_text
                     captured_urls.extend(collect_media_from_text(dom_html))
                 except Exception:
                     pass
 
-                duration_sec = extract_duration_seconds(combined_blob)
+                duration_sec = read_player_duration_seconds(active_page)
                 duration_ok, duration_reason = is_target_duration(duration_sec)
                 if not duration_ok:
                     print(f"[ATLA - SÜRE] {meta['title']} -> {duration_reason}")
