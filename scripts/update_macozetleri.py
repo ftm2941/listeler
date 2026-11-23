@@ -1,4 +1,3 @@
-import codecs
 import os
 import re
 from urllib.parse import unquote, urlparse
@@ -9,8 +8,8 @@ SOURCE_URL = os.getenv(
     "SOURCE_URL", "https://beinsports.com.tr/mac-ozetleri-goller/super-lig"
 )
 OUTPUT_FILE = os.getenv("OUTPUT_FILE", "macozetleri.m3u8")
-MIN_DURATION_SEC = int(os.getenv("MIN_DURATION_SEC", "420"))  # 7 dk 00 sn
-MAX_DURATION_SEC = int(os.getenv("MAX_DURATION_SEC", "480"))  # 8 dk 00 sn
+MIN_DURATION_SEC = int(os.getenv("MIN_DURATION_SEC", "540"))  # 9 dk 00 sn
+MAX_DURATION_SEC = int(os.getenv("MAX_DURATION_SEC", "660"))  # 11 dk 00 sn
 REQUIRE_DURATION = os.getenv("REQUIRE_DURATION", "false").strip().lower() in (
     "1",
     "true",
@@ -90,7 +89,7 @@ DURATION_FIELD_RE = re.compile(
     re.IGNORECASE,
 )
 
-MMSS_RE = re.compile(r"\b(?:0?[4-9]|1[0-5]):([0-5]\d)\b")
+MMSS_RE = re.compile(r"\b(?:0?[5-9]|1[0-5]):([0-5]\d)\b")
 
 NOISE_LINES = {
     "özeti izle",
@@ -123,11 +122,11 @@ def normalize_tr(text: str) -> str:
 
 def decode_escaped_text(raw_text: str) -> str:
     text = unquote(raw_text).replace("\\/", "/").replace("\\u0026", "&")
-    if "\\u00" in text or "\\x" in text:
-        try:
-            text = codecs.decode(text, "unicode_escape")
-        except Exception:
-            pass
+    text = re.sub(
+        r"\\u([0-9a-fA-F]{4})",
+        lambda m: chr(int(m.group(1), 16)),
+        text,
+    )
     return text
 
 
@@ -359,35 +358,6 @@ def click_target_by_index(page: Page, idx: int) -> bool:
     )
 
 
-def log_page_debug_info(page: Page) -> None:
-    try:
-        info = page.evaluate(
-            """() => {
-                const links = Array.from(document.querySelectorAll('a[href]'))
-                    .map(a => a.getAttribute('href'))
-                    .filter(Boolean);
-                const ozetLinks = links.filter(h => h.includes('ozet'));
-                const buttons = Array.from(document.querySelectorAll('button, a'))
-                    .map(el => (el.innerText || el.textContent || '').replace(/\\s+/g, ' ').trim())
-                    .filter(Boolean)
-                    .slice(0, 20);
-                return {
-                    url: location.href,
-                    title: document.title,
-                    bodyLen: (document.body && document.body.innerText ? document.body.innerText.length : 0),
-                    ozetLinksCount: ozetLinks.length,
-                    sampleOzetLinks: ozetLinks.slice(0, 8),
-                    sampleTexts: buttons
-                };
-            }"""
-        )
-        print(f"[DEBUG] URL: {info.get('url')} | Title: {info.get('title')} | BodyLen: {info.get('bodyLen')}")
-        print(f"[DEBUG] 'ozet' link sayısı: {info.get('ozetLinksCount')} | Örnekler: {info.get('sampleOzetLinks')}")
-        print(f"[DEBUG] İlk metinler: {info.get('sampleTexts')}")
-    except Exception as exc:
-        print(f"[DEBUG] Sayfa bilgisi alınamadı: {exc}")
-
-
 def scrape_with_playwright(source_url: str) -> list[dict[str, str]]:
     entries: list[dict[str, str]] = []
     used_urls: set[str] = set()
@@ -421,8 +391,6 @@ def scrape_with_playwright(source_url: str) -> list[dict[str, str]]:
 
         total = count_target_matches(page)
         print(f"Sayfada {total} adet hedef ('ÖZETİ İZLE' / özet) elemanı bulundu.")
-        if total == 0:
-            log_page_debug_info(page)
 
         for idx in range(total):
             card_lines = get_card_lines_for_index(page, idx)
@@ -549,7 +517,7 @@ def main() -> None:
     fresh_entries = scrape_with_playwright(SOURCE_URL)
     if not fresh_entries:
         raise RuntimeError(
-            "7-8 dakikalık aralığa uyan yeni video akışı yakalanamadı."
+            "10 dakikalık aralığa uyan yeni video akışı yakalanamadı."
         )
 
     write_m3u8(fresh_entries, OUTPUT_FILE)
