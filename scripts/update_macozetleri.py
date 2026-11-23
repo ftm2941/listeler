@@ -275,20 +275,20 @@ def dismiss_consent_popups(page: Page) -> None:
     for pat in patterns:
         try:
             btn = page.get_by_role("button", name=re.compile(pat, re.IGNORECASE)).first
-            if btn.is_visible(timeout=800):
-                btn.click(timeout=1500)
-                page.wait_for_timeout(500)
+            if btn.is_visible(timeout=400):
+                btn.click(timeout=1000)
+                page.wait_for_timeout(300)
                 return
         except Exception:
             pass
 
 
-def scroll_page_to_load_all(page: Page, steps: int = 8) -> None:
+def scroll_page_to_load_all(page: Page, steps: int = 4) -> None:
     for _ in range(steps):
-        page.evaluate("window.scrollBy(0, Math.floor(window.innerHeight * 0.85))")
-        page.wait_for_timeout(600)
+        page.evaluate("window.scrollBy(0, Math.floor(window.innerHeight * 0.9))")
+        page.wait_for_timeout(300)
     page.evaluate("window.scrollTo(0, 0)")
-    page.wait_for_timeout(800)
+    page.wait_for_timeout(400)
 
 
 def collect_target_elements_js() -> str:
@@ -370,19 +370,19 @@ def log_page_debug_info(page: Page) -> None:
                 const buttons = Array.from(document.querySelectorAll('button, a'))
                     .map(el => (el.innerText || el.textContent || '').replace(/\\s+/g, ' ').trim())
                     .filter(Boolean)
-                    .slice(0, 25);
+                    .slice(0, 20);
                 return {
                     url: location.href,
                     title: document.title,
                     bodyLen: (document.body && document.body.innerText ? document.body.innerText.length : 0),
                     ozetLinksCount: ozetLinks.length,
-                    sampleOzetLinks: ozetLinks.slice(0, 10),
+                    sampleOzetLinks: ozetLinks.slice(0, 8),
                     sampleTexts: buttons
                 };
             }"""
         )
         print(f"[DEBUG] URL: {info.get('url')} | Title: {info.get('title')} | BodyLen: {info.get('bodyLen')}")
-        print(f"[DEBUG] 'ozet' içeren link sayısı: {info.get('ozetLinksCount')} | Örnekler: {info.get('sampleOzetLinks')}")
+        print(f"[DEBUG] 'ozet' link sayısı: {info.get('ozetLinksCount')} | Örnekler: {info.get('sampleOzetLinks')}")
         print(f"[DEBUG] İlk metinler: {info.get('sampleTexts')}")
     except Exception as exc:
         print(f"[DEBUG] Sayfa bilgisi alınamadı: {exc}")
@@ -411,8 +411,11 @@ def scrape_with_playwright(source_url: str) -> list[dict[str, str]]:
             "Object.defineProperty(navigator, 'webdriver', { get: () => undefined });"
         )
         page = context.new_page()
-        page.goto(source_url, wait_until="domcontentloaded", timeout=45000)
-        page.wait_for_timeout(3000)
+        page.set_default_timeout(15000)
+
+        print("Ana sayfa açılıyor...")
+        page.goto(source_url, wait_until="domcontentloaded", timeout=25000)
+        page.wait_for_timeout(1500)
         dismiss_consent_popups(page)
         scroll_page_to_load_all(page)
 
@@ -459,16 +462,16 @@ def scrape_with_playwright(source_url: str) -> list[dict[str, str]]:
 
             try:
                 try:
-                    with context.expect_page(timeout=4000) as popup_info:
+                    with context.expect_page(timeout=2000) as popup_info:
                         clicked = click_target_by_index(page, idx)
                         if not clicked:
                             raise RuntimeError("Eleman tıklanamadı")
                     popup_page = popup_info.value
-                    popup_page.wait_for_load_state("domcontentloaded", timeout=20000)
-                    popup_page.wait_for_timeout(3000)
+                    popup_page.wait_for_load_state("domcontentloaded", timeout=12000)
+                    popup_page.wait_for_timeout(1500)
                     active_page = popup_page
                 except Exception:
-                    page.wait_for_timeout(3000)
+                    page.wait_for_timeout(1500)
 
                 combined_blob = "\n".join(captured_texts)
                 try:
@@ -517,10 +520,8 @@ def scrape_with_playwright(source_url: str) -> list[dict[str, str]]:
                         pass
                 if page.url != start_url:
                     try:
-                        page.goto(start_url, wait_until="domcontentloaded", timeout=30000)
-                        page.wait_for_timeout(2000)
-                        dismiss_consent_popups(page)
-                        scroll_page_to_load_all(page)
+                        page.goto(start_url, wait_until="domcontentloaded", timeout=20000)
+                        page.wait_for_timeout(1000)
                     except Exception:
                         pass
 
