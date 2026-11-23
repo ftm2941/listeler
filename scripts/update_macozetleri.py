@@ -10,6 +10,11 @@ SOURCE_URL = os.getenv(
     "SOURCE_URL", "https://beinsports.com.tr/mac-ozetleri-goller/super-lig"
 )
 OUTPUT_FILE = os.getenv("OUTPUT_FILE", "macozetleri.m3u8")
+REFRESH_EXISTING = os.getenv("REFRESH_EXISTING", "false").strip().lower() in (
+    "1",
+    "true",
+    "yes",
+)
 
 HEADERS = {
     "User-Agent": (
@@ -281,7 +286,7 @@ def parse_existing_m3u8(path: str) -> list[dict[str, str]]:
         if lines[i].startswith("#EXTINF:") and i + 1 < len(lines):
             extinf = lines[i]
             url = lines[i + 1]
-            if is_valid_url(url) and not url.startswith("#"):
+            if not url.startswith("#"):
                 tvg_id = re.search(r'tvg-id="([^"]*)"', extinf)
                 tvg_name = re.search(r'tvg-name="([^"]*)"', extinf)
                 tvg_logo = re.search(r'tvg-logo="([^"]*)"', extinf)
@@ -313,9 +318,7 @@ def collect_ozet_links(main_html: str, base_url: str) -> list[tuple[str, dict[st
     for a in soup.find_all("a", href=True):
         href = a["href"].strip()
         full_url = urljoin(base_url, href)
-        if "/lig/super-lig/ozet/" not in full_url:
-            continue
-        if full_url in seen_pages:
+        if "/lig/super-lig/ozet/" not in full_url or full_url in seen_pages:
             continue
 
         meta = parse_ozet_page_url(full_url)
@@ -340,15 +343,47 @@ def collect_ozet_links(main_html: str, base_url: str) -> list[tuple[str, dict[st
     return found
 
 
-def extract_new_entries(main_html: str, base_url: str) -> list[dict[str, str]]:
+def needs_fetch(
+    meta: dict[str, str], existing_by_id: dict[str, dict[str, str]]
+) -> tuple[bool, str]:
+    tvg_id = meta["tvg_id"]
+    existing_item = existing_by_id.get(tvg_id)
+    if not existing_item:
+        return True, "yeni maç"
+
+    current_url = existing_item.get("url", "")
+    if not is_valid_url(current_url):
+        return True, "geçersiz veya eksik URL"
+
+    if REFRESH_EXISTING:
+        return True, "REFRESH_EXISTING aktif"
+
+    return False, "zaten güncel"
+
+
+def extract_delta_entries(
+    main_html: str, base_url: str, existing_by_id: dict[str, dict[str, str]]
+) -> list[dict[str, str]]:
     main_soup = BeautifulSoup(decode_escaped_text(main_html), "html.parser")
     ozet_pages = collect_ozet_links(main_html, base_url)
     print(f"Ana sayfada {len(ozet_pages)} adet /lig/super-lig/ozet/ linki bulundu.")
 
-    entries: list[dict[str, str]] = []
-    used_urls: set[str] = set()
+    used_urls: set[str] = {
+        item["url"]
+        for item in existing_by_id.values()
+        if is_valid_url(item.get("url", "")) and not REFRESH_EXISTING
+    }
+
+    updated_or_new: list[dict[str, str]] = []
+    skipped_count = 0
 
     for page_url, meta in ozet_pages:
+        should_fetch, reason = needs_fetch(meta, existing_by_id)
+        if not should_fetch:
+            skipped_count += 1
+            print(f"[ATLA] {meta['title']} ({reason})")
+            continue
+
         try:
             page_html = fetch_html(page_url)
         except Exception as exc:
@@ -357,7 +392,7 @@ def extract_new_entries(main_html: str, base_url: str) -> list[dict[str, str]]:
 
         media_url = extract_media_url(page_html, meta, used_urls)
         if not media_url:
-            print(f"[UYARI] Medya URL bulunamadı: {meta['title']} -> {page_url}")
+            print(f"[UYARI] Medya URL bulunamadı ({reason}): {meta['title']} -> {page_url}")
             continue
 
         used_urls.add(media_url)
@@ -365,9 +400,11 @@ def extract_new_entries(main_html: str, base_url: str) -> list[dict[str, str]]:
         logo = extract_logo(page_soup, page_url, meta) or extract_logo(
             main_soup, base_url, meta
         )
+        if not logo and meta["tvg_id"] in existing_by_id:
+            logo = existing_by_id[meta["tvg_id"]].get("tvg_logo", "")
 
-        print(f"[OK] {meta['title']} -> {media_url}")
-        entries.append(
+        print(f"[GÜNCEL/YENİ] {meta['title']} ({reason}) -> {media_url}")
+        updated_or_new.append(
             {
                 "tvg_id": meta["tvg_id"],
                 "tvg_name": meta["tvg_name"],
@@ -378,7 +415,11 @@ def extract_new_entries(main_html: str, base_url: str) -> list[dict[str, str]]:
             }
         )
 
-    return entries
+    print(
+        f"Özet taraması tamamlandı: {len(updated_or_new)} yeni/güncel maç, "
+        f"{skipped_count} mevcut maç atlandı."
+    )
+    return updated_or_new
 
 
 def write_m3u8(items: list[dict[str, str]], output_path: str) -> None:
@@ -398,9 +439,13 @@ def write_m3u8(items: list[dict[str, str]], output_path: str) -> None:
 
 def main() -> None:
     existing = parse_existing_m3u8(OUTPUT_FILE)
+    existing_by_id = {
+        item["tvg_id"]: item for item in existing if item.get("tvg_id")
+    }
+
     try:
         main_html = fetch_html(SOURCE_URL)
-        fresh = extract_new_entries(main_html, SOURCE_URL)
+        delta = extract_delta_entries(main_html, SOURCE_URL, existing_by_id)
     except Exception as exc:
         print(f"Kaynak çekilirken hata oluştu: {exc}")
         if existing:
@@ -409,39 +454,28 @@ def main() -> None:
             return
         raise
 
-    if not fresh:
-        if existing:
-            print(
-                "Yeni canlı medya URL'si bulunamadı; mevcut macozetleri.m3u8 korunuyor."
-            )
-            write_m3u8(existing, OUTPUT_FILE)
-            return
-        raise RuntimeError(
-            "Özet sayfasından medya URL'si çekilemedi; "
-            "video bağlantısı dinamik JS veya harici oynatıcı isteğiyle üretiliyor olabilir."
-        )
+    if not delta and existing:
+        print("Yeni veya yenilenecek maç bulunamadı; mevcut liste korunuyor.")
+        write_m3u8(existing, OUTPUT_FILE)
+        return
 
-    # Yeni çekilen kayıtlar aynı tvg_id varsa mevcut kaydın üzerine yazılır
-    fresh_by_id = {
-        (item["tvg_id"] or item["url"]): item
-        for item in fresh
-        if is_valid_url(item["url"])
-    }
-
-    merged: list[dict[str, str]] = list(fresh_by_id.values())
-    seen_ids: set[str] = set(fresh_by_id.keys())
+    merged_by_id: dict[str, dict[str, str]] = {}
+    for item in delta:
+        key = item["tvg_id"] or item["url"]
+        if key and is_valid_url(item["url"]):
+            merged_by_id[key] = item
 
     for old_item in existing:
-        old_key = old_item["tvg_id"] or old_item["url"]
-        if old_key and old_key not in seen_ids and is_valid_url(old_item["url"]):
-            seen_ids.add(old_key)
-            merged.append(old_item)
+        key = old_item["tvg_id"] or old_item["url"]
+        if key and key not in merged_by_id and is_valid_url(old_item["url"]):
+            merged_by_id[key] = old_item
+
+    merged = list(merged_by_id.values())
+    if not merged:
+        raise RuntimeError("Listeye yazılacak geçerli kayıt bulunamadı.")
 
     write_m3u8(merged, OUTPUT_FILE)
-    print(
-        f"Güncellendi: {len(fresh_by_id)} yeni/taze kayıt, "
-        f"toplam {len(merged)} kayıt {OUTPUT_FILE} dosyasına yazıldı."
-    )
+    print(f"Toplam {len(merged)} kayıt {OUTPUT_FILE} dosyasına yazıldı.")
 
 
 if __name__ == "__main__":
