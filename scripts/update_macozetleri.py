@@ -263,9 +263,18 @@ def collect_media_from_text(text: str) -> list[str]:
     return MEDIA_URL_RE.findall(decoded)
 
 
+def scroll_page_to_load_all(page: Page, steps: int = 8) -> None:
+    for _ in range(steps):
+        page.evaluate("window.scrollBy(0, Math.floor(window.innerHeight * 0.85))")
+        page.wait_for_timeout(600)
+    page.evaluate("window.scrollTo(0, 0)")
+    page.wait_for_timeout(800)
+
+
 def find_ozeti_izle_locators(page: Page):
-    return page.locator("a, button, [role='button'], div, span").filter(
-        has_text=re.compile(r"^\s*özeti\s+izle\s*$", re.IGNORECASE)
+    # Alt eleman değil, doğrudan "ÖZETİ İZLE" metnini barındıran en iç/tıklanabilir düğüm
+    return page.locator("a, button, [role='button']").filter(
+        has_text=re.compile(r"özeti\s+izle|ozeti\s+izle", re.IGNORECASE)
     )
 
 
@@ -275,13 +284,14 @@ def get_card_lines_for_index(page: Page, idx: int) -> list[str]:
             const nodes = Array.from(document.querySelectorAll('a, button, [role="button"], div, span'));
             const matches = nodes.filter(el => {
                 const txt = (el.innerText || el.textContent || '').replace(/\\s+/g, ' ').trim().toLowerCase();
-                return txt === 'özeti izle' || txt === 'ozeti izle';
+                const isLeafLike = el.children.length <= 2;
+                return isLeafLike && (txt.includes('özeti izle') || txt.includes('ozeti izle'));
             });
             const target = matches[index];
             if (!target) return [];
 
             let cur = target;
-            for (let i = 0; i < 6; i++) {
+            for (let i = 0; i < 7; i++) {
                 if (!cur.parentElement) break;
                 cur = cur.parentElement;
                 const lines = (cur.innerText || '')
@@ -289,11 +299,43 @@ def get_card_lines_for_index(page: Page, idx: int) -> list[str]:
                     .map(s => s.replace(/\\s+/g, ' ').trim())
                     .filter(Boolean);
                 const hasSummary = lines.some(l => l.toLowerCase().includes('özeti izle') || l.toLowerCase().includes('ozeti izle'));
-                if (hasSummary && lines.length >= 4 && lines.length <= 25) {
+                if (hasSummary && lines.length >= 4 && lines.length <= 30) {
                     return lines;
                 }
             }
             return [];
+        }""",
+        idx,
+    )
+
+
+def count_leaf_matches(page: Page) -> int:
+    return page.evaluate(
+        """() => {
+            const nodes = Array.from(document.querySelectorAll('a, button, [role="button"], div, span'));
+            return nodes.filter(el => {
+                const txt = (el.innerText || el.textContent || '').replace(/\\s+/g, ' ').trim().toLowerCase();
+                const isLeafLike = el.children.length <= 2;
+                return isLeafLike && (txt.includes('özeti izle') || txt.includes('ozeti izle'));
+            }).length;
+        }"""
+    )
+
+
+def click_leaf_match_by_index(page: Page, idx: int) -> bool:
+    return page.evaluate(
+        """(index) => {
+            const nodes = Array.from(document.querySelectorAll('a, button, [role="button"], div, span'));
+            const matches = nodes.filter(el => {
+                const txt = (el.innerText || el.textContent || '').replace(/\\s+/g, ' ').trim().toLowerCase();
+                const isLeafLike = el.children.length <= 2;
+                return isLeafLike && (txt.includes('özeti izle') || txt.includes('ozeti izle'));
+            });
+            const target = matches[index];
+            if (!target) return false;
+            target.scrollIntoView({ behavior: 'instant', block: 'center' });
+            target.click();
+            return true;
         }""",
         idx,
     )
@@ -317,9 +359,9 @@ def scrape_with_playwright(source_url: str) -> list[dict[str, str]]:
         page = context.new_page()
         page.goto(source_url, wait_until="domcontentloaded", timeout=45000)
         page.wait_for_timeout(3000)
+        scroll_page_to_load_all(page)
 
-        locator = find_ozeti_izle_locators(page)
-        total = locator.count()
+        total = count_leaf_matches(page)
         print(f"Sayfada {total} adet 'ÖZETİ İZLE' elemanı bulundu.")
 
         for idx in range(total):
@@ -359,12 +401,11 @@ def scrape_with_playwright(source_url: str) -> list[dict[str, str]]:
             start_url = page.url
 
             try:
-                target = find_ozeti_izle_locators(page).nth(idx)
-                target.scroll_into_view_if_needed(timeout=8000)
-
                 try:
                     with context.expect_page(timeout=4000) as popup_info:
-                        target.click(timeout=8000)
+                        clicked = click_leaf_match_by_index(page, idx)
+                        if not clicked:
+                            raise RuntimeError("Eleman tıklanamadı")
                     popup_page = popup_info.value
                     popup_page.wait_for_load_state("domcontentloaded", timeout=20000)
                     popup_page.wait_for_timeout(3000)
@@ -421,6 +462,7 @@ def scrape_with_playwright(source_url: str) -> list[dict[str, str]]:
                     try:
                         page.goto(start_url, wait_until="domcontentloaded", timeout=30000)
                         page.wait_for_timeout(2000)
+                        scroll_page_to_load_all(page)
                     except Exception:
                         pass
 
