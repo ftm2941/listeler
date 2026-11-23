@@ -263,6 +263,26 @@ def collect_media_from_text(text: str) -> list[str]:
     return MEDIA_URL_RE.findall(decoded)
 
 
+def dismiss_consent_popups(page: Page) -> None:
+    patterns = [
+        r"tümünü kabul et",
+        r"kabul et",
+        r"onayla",
+        r"accept all",
+        r"accept",
+        r"tamam",
+    ]
+    for pat in patterns:
+        try:
+            btn = page.get_by_role("button", name=re.compile(pat, re.IGNORECASE)).first
+            if btn.is_visible(timeout=800):
+                btn.click(timeout=1500)
+                page.wait_for_timeout(500)
+                return
+        except Exception:
+            pass
+
+
 def scroll_page_to_load_all(page: Page, steps: int = 8) -> None:
     for _ in range(steps):
         page.evaluate("window.scrollBy(0, Math.floor(window.innerHeight * 0.85))")
@@ -271,74 +291,101 @@ def scroll_page_to_load_all(page: Page, steps: int = 8) -> None:
     page.wait_for_timeout(800)
 
 
-def find_ozeti_izle_locators(page: Page):
-    # Alt eleman değil, doğrudan "ÖZETİ İZLE" metnini barındıran en iç/tıklanabilir düğüm
-    return page.locator("a, button, [role='button']").filter(
-        has_text=re.compile(r"özeti\s+izle|ozeti\s+izle", re.IGNORECASE)
-    )
+def collect_target_elements_js() -> str:
+    return """() => {
+        const norm = (s) => (s || '').replace(/\\s+/g, ' ').trim().toLowerCase();
+        const nodes = Array.from(document.querySelectorAll('a, button, [role="button"], div, span'));
+        const summaryMatches = nodes.filter(el => {
+            const txt = norm(el.innerText || el.textContent);
+            const aria = norm(el.getAttribute('aria-label'));
+            const title = norm(el.getAttribute('title'));
+            const combined = `${txt} ${aria} ${title}`;
+            const hit = combined.includes('özeti izle') || combined.includes('ozeti izle');
+            if (!hit) return false;
+            const childHits = Array.from(el.children).filter(ch => {
+                const ctxt = norm((ch.innerText || ch.textContent) + ' ' + (ch.getAttribute('aria-label') || ''));
+                return ctxt.includes('özeti izle') || ctxt.includes('ozeti izle');
+            }).length;
+            return childHits === 0;
+        });
+        if (summaryMatches.length > 0) return summaryMatches;
+
+        return Array.from(document.querySelectorAll('a[href*="/ozet/"]'));
+    }"""
+
+
+def count_target_matches(page: Page) -> int:
+    return page.evaluate(f"() => {{ const fn = {collect_target_elements_js()}; return fn().length; }}")
 
 
 def get_card_lines_for_index(page: Page, idx: int) -> list[str]:
     return page.evaluate(
-        """(index) => {
-            const nodes = Array.from(document.querySelectorAll('a, button, [role="button"], div, span'));
-            const matches = nodes.filter(el => {
-                const txt = (el.innerText || el.textContent || '').replace(/\\s+/g, ' ').trim().toLowerCase();
-                const isLeafLike = el.children.length <= 2;
-                return isLeafLike && (txt.includes('özeti izle') || txt.includes('ozeti izle'));
-            });
+        f"""(index) => {{
+            const fn = {collect_target_elements_js()};
+            const matches = fn();
             const target = matches[index];
             if (!target) return [];
 
             let cur = target;
-            for (let i = 0; i < 7; i++) {
+            for (let i = 0; i < 8; i++) {{
                 if (!cur.parentElement) break;
                 cur = cur.parentElement;
-                const lines = (cur.innerText || '')
+                const lines = (cur.innerText || cur.textContent || '')
                     .split('\\n')
                     .map(s => s.replace(/\\s+/g, ' ').trim())
                     .filter(Boolean);
-                const hasSummary = lines.some(l => l.toLowerCase().includes('özeti izle') || l.toLowerCase().includes('ozeti izle'));
-                if (hasSummary && lines.length >= 4 && lines.length <= 30) {
+                if (lines.length >= 3 && lines.length <= 35) {{
                     return lines;
-                }
-            }
+                }}
+            }}
             return [];
-        }""",
+        }}""",
         idx,
     )
 
 
-def count_leaf_matches(page: Page) -> int:
+def click_target_by_index(page: Page, idx: int) -> bool:
     return page.evaluate(
-        """() => {
-            const nodes = Array.from(document.querySelectorAll('a, button, [role="button"], div, span'));
-            return nodes.filter(el => {
-                const txt = (el.innerText || el.textContent || '').replace(/\\s+/g, ' ').trim().toLowerCase();
-                const isLeafLike = el.children.length <= 2;
-                return isLeafLike && (txt.includes('özeti izle') || txt.includes('ozeti izle'));
-            }).length;
-        }"""
-    )
-
-
-def click_leaf_match_by_index(page: Page, idx: int) -> bool:
-    return page.evaluate(
-        """(index) => {
-            const nodes = Array.from(document.querySelectorAll('a, button, [role="button"], div, span'));
-            const matches = nodes.filter(el => {
-                const txt = (el.innerText || el.textContent || '').replace(/\\s+/g, ' ').trim().toLowerCase();
-                const isLeafLike = el.children.length <= 2;
-                return isLeafLike && (txt.includes('özeti izle') || txt.includes('ozeti izle'));
-            });
+        f"""(index) => {{
+            const fn = {collect_target_elements_js()};
+            const matches = fn();
             const target = matches[index];
             if (!target) return false;
-            target.scrollIntoView({ behavior: 'instant', block: 'center' });
+            target.scrollIntoView({{ behavior: 'instant', block: 'center' }});
             target.click();
             return true;
-        }""",
+        }}""",
         idx,
     )
+
+
+def log_page_debug_info(page: Page) -> None:
+    try:
+        info = page.evaluate(
+            """() => {
+                const links = Array.from(document.querySelectorAll('a[href]'))
+                    .map(a => a.getAttribute('href'))
+                    .filter(Boolean);
+                const ozetLinks = links.filter(h => h.includes('ozet'));
+                const buttons = Array.from(document.querySelectorAll('button, a'))
+                    .map(el => (el.innerText || el.textContent || '').replace(/\\s+/g, ' ').trim())
+                    .filter(Boolean)
+                    .slice(0, 25);
+                return {
+                    url: location.href,
+                    title: document.title,
+                    bodyLen: (document.body && document.body.innerText ? document.body.innerText.length : 0),
+                    ozetLinksCount: ozetLinks.length,
+                    sampleOzetLinks: ozetLinks.slice(0, 10),
+                    sampleTexts: buttons
+                };
+            }"""
+        )
+        print(f"[DEBUG] URL: {info.get('url')} | Title: {info.get('title')} | BodyLen: {info.get('bodyLen')}")
+        print(f"[DEBUG] 'ozet' içeren link sayısı: {info.get('ozetLinksCount')} | Örnekler: {info.get('sampleOzetLinks')}")
+        print(f"[DEBUG] İlk metinler: {info.get('sampleTexts')}")
+    except Exception as exc:
+        print(f"[DEBUG] Sayfa bilgisi alınamadı: {exc}")
 
 
 def scrape_with_playwright(source_url: str) -> list[dict[str, str]]:
@@ -347,7 +394,10 @@ def scrape_with_playwright(source_url: str) -> list[dict[str, str]]:
     seen_ids: set[str] = set()
 
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)
+        browser = p.chromium.launch(
+            headless=True,
+            args=["--disable-blink-features=AutomationControlled"],
+        )
         context = browser.new_context(
             user_agent=(
                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
@@ -355,14 +405,21 @@ def scrape_with_playwright(source_url: str) -> list[dict[str, str]]:
                 "Chrome/126.0.0.0 Safari/537.36"
             ),
             locale="tr-TR",
+            viewport={"width": 1366, "height": 900},
+        )
+        context.add_init_script(
+            "Object.defineProperty(navigator, 'webdriver', { get: () => undefined });"
         )
         page = context.new_page()
         page.goto(source_url, wait_until="domcontentloaded", timeout=45000)
         page.wait_for_timeout(3000)
+        dismiss_consent_popups(page)
         scroll_page_to_load_all(page)
 
-        total = count_leaf_matches(page)
-        print(f"Sayfada {total} adet 'ÖZETİ İZLE' elemanı bulundu.")
+        total = count_target_matches(page)
+        print(f"Sayfada {total} adet hedef ('ÖZETİ İZLE' / özet) elemanı bulundu.")
+        if total == 0:
+            log_page_debug_info(page)
 
         for idx in range(total):
             card_lines = get_card_lines_for_index(page, idx)
@@ -403,7 +460,7 @@ def scrape_with_playwright(source_url: str) -> list[dict[str, str]]:
             try:
                 try:
                     with context.expect_page(timeout=4000) as popup_info:
-                        clicked = click_leaf_match_by_index(page, idx)
+                        clicked = click_target_by_index(page, idx)
                         if not clicked:
                             raise RuntimeError("Eleman tıklanamadı")
                     popup_page = popup_info.value
@@ -462,6 +519,7 @@ def scrape_with_playwright(source_url: str) -> list[dict[str, str]]:
                     try:
                         page.goto(start_url, wait_until="domcontentloaded", timeout=30000)
                         page.wait_for_timeout(2000)
+                        dismiss_consent_popups(page)
                         scroll_page_to_load_all(page)
                     except Exception:
                         pass
