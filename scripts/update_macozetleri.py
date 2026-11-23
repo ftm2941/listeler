@@ -1,32 +1,21 @@
 import codecs
 import os
 import re
-from urllib.parse import unquote, urljoin, urlparse
+from urllib.parse import unquote, urlparse
 
-import requests
-from bs4 import BeautifulSoup, Tag
+from playwright.sync_api import Page, sync_playwright
 
 SOURCE_URL = os.getenv(
     "SOURCE_URL", "https://beinsports.com.tr/mac-ozetleri-goller/super-lig"
 )
 OUTPUT_FILE = os.getenv("OUTPUT_FILE", "macozetleri.m3u8")
-MIN_DURATION_SEC = int(os.getenv("MIN_DURATION_SEC", "400"))  # ~6 dk 40 sn
-MAX_DURATION_SEC = int(os.getenv("MAX_DURATION_SEC", "540"))  # 9 dk 00 sn
+MIN_DURATION_SEC = int(os.getenv("MIN_DURATION_SEC", "420"))  # 7 dk 00 sn
+MAX_DURATION_SEC = int(os.getenv("MAX_DURATION_SEC", "480"))  # 8 dk 00 sn
 REQUIRE_DURATION = os.getenv("REQUIRE_DURATION", "false").strip().lower() in (
     "1",
     "true",
     "yes",
 )
-
-HEADERS = {
-    "User-Agent": (
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-        "AppleWebKit/537.36 (KHTML, like Gecko) "
-        "Chrome/126.0.0.0 Safari/537.36"
-    ),
-    "Referer": "https://beinsports.com.tr/",
-    "Accept-Language": "tr-TR,tr;q=0.9,en-US;q=0.8",
-}
 
 TEAM_LABELS = {
     "bjk": "Beşiktaş",
@@ -91,11 +80,6 @@ SHORT_CODES = {
     "kasimpasa": ["kas", "ppasa"],
 }
 
-OZET_PAGE_RE = re.compile(
-    r"/lig/super-lig/ozet/(\d{4}-\d{4})/(\d+)/([^/?#]+)",
-    re.IGNORECASE,
-)
-
 MEDIA_URL_RE = re.compile(
     r"https?://[^\s\"'<>\\]+?\.(?:mp4|m3u8)(?:\?[^\s\"'<>\\]*)?",
     re.IGNORECASE,
@@ -106,7 +90,7 @@ DURATION_FIELD_RE = re.compile(
     re.IGNORECASE,
 )
 
-MMSS_RE = re.compile(r"\b(0?[6789]):([0-5]\d)\b")
+MMSS_RE = re.compile(r"\b(?:0?[4-9]|1[0-5]):([0-5]\d)\b")
 
 NOISE_LINES = {
     "özeti izle",
@@ -134,130 +118,7 @@ def slugify(text: str) -> str:
 
 
 def normalize_tr(text: str) -> str:
-    return (
-        text.replace("İ", "i")
-        .replace("I", "ı")
-        .lower()
-        .strip()
-    )
-
-
-def normalize_team(slug: str) -> str:
-    key = slug.strip().lower()
-    if key in TEAM_LABELS:
-        return TEAM_LABELS[key]
-    return " ".join(part.capitalize() for part in key.split("-") if part)
-
-
-def parse_card_details(anchor: Tag) -> dict[str, str]:
-    """
-    'ÖZETİ İZLE' linkini saran maç kartı bloğundan takım isimlerini ve skoru ayıklar.
-    """
-    container: Tag | None = anchor
-    card_lines: list[str] = []
-
-    for _ in range(6):
-        if container is None or container.parent is None:
-            break
-        container = container.parent
-        raw_lines = [
-            re.sub(r"\s+", " ", line).strip()
-            for line in container.get_text("\n").splitlines()
-        ]
-        lines = [line for line in raw_lines if line]
-        # Kart içinde genellikle skor rakamları ve 2 takım adı bulunur
-        if 4 <= len(lines) <= 25 and any(
-            "özeti izle" in normalize_tr(l) for l in lines
-        ):
-            card_lines = lines
-            break
-
-    if not card_lines:
-        return {}
-
-    filtered: list[str] = []
-    scores: list[str] = []
-    for line in card_lines:
-        low = normalize_tr(line)
-        if low in NOISE_LINES:
-            continue
-        if re.search(r"\b20\d{2}\b", line) and ":" in line:
-            # Tarih satırı: "23 Kasım 2026, Pazartesi, 20:00"
-            continue
-        if line.isdigit():
-            scores.append(line)
-            continue
-        if not filtered or filtered[-1] != line:
-            filtered.append(line)
-
-    if len(filtered) >= 2:
-        home_team = filtered[0]
-        away_team = filtered[-1]
-        if len(scores) >= 2:
-            title = f"{home_team} {scores[0]} - {scores[1]} {away_team} (Maç Özeti)"
-        else:
-            title = f"{home_team} - {away_team} (Maç Özeti)"
-        return {
-            "home_team": home_team,
-            "away_team": away_team,
-            "tvg_name": f"{home_team} - {away_team}",
-            "title": title,
-        }
-
-    return {}
-
-
-def parse_ozet_page_url(page_url: str, card_info: dict[str, str]) -> dict[str, str]:
-    path = urlparse(page_url).path
-    match = OZET_PAGE_RE.search(path)
-
-    season = ""
-    week_num = ""
-    home_slug = ""
-    away_slug = ""
-    url_tvg_name = ""
-    url_title = ""
-
-    if match:
-        season, week_num, match_slug = match.groups()
-        clean_slug = re.sub(r"-mac-ozeti$", "", match_slug, flags=re.IGNORECASE)
-        score_match = re.match(r"^(.+?)-(\d+)-(\d+)-(.+)$", clean_slug)
-        if score_match:
-            home_slug, home_score, away_score, away_slug = score_match.groups()
-            home_team = normalize_team(home_slug)
-            away_team = normalize_team(away_slug)
-            url_tvg_name = f"{home_team} - {away_team}"
-            url_title = f"{home_team} {home_score} - {away_score} {away_team} (Maç Özeti)"
-        else:
-            url_tvg_name = normalize_team(clean_slug)
-            url_title = f"{url_tvg_name} (Maç Özeti)"
-
-    tvg_name = card_info.get("tvg_name") or url_tvg_name or "Süper Lig Özeti"
-    title = card_info.get("title") or url_title or f"{tvg_name} (Maç Özeti)"
-    group = f"{week_num}. Hafta" if week_num else "Süper Lig Özetleri"
-    id_prefix = f"superlig_{week_num}" if week_num else "superlig"
-
-    if not home_slug and card_info.get("home_team"):
-        home_slug = slugify(card_info["home_team"])
-    if not away_slug and card_info.get("away_team"):
-        away_slug = slugify(card_info["away_team"])
-
-    return {
-        "season": season,
-        "week_num": week_num,
-        "home_slug": slugify(home_slug),
-        "away_slug": slugify(away_slug),
-        "group": group,
-        "tvg_id": f"{id_prefix}_{slugify(tvg_name)}",
-        "tvg_name": tvg_name,
-        "title": title,
-    }
-
-
-def fetch_html(url: str) -> str:
-    resp = requests.get(url, headers=HEADERS, timeout=20)
-    resp.raise_for_status()
-    return resp.text
+    return text.replace("İ", "i").replace("I", "ı").lower().strip()
 
 
 def decode_escaped_text(raw_text: str) -> str:
@@ -270,17 +131,60 @@ def decode_escaped_text(raw_text: str) -> str:
     return text
 
 
-def extract_duration_seconds(decoded_html: str) -> int | None:
-    for m in DURATION_FIELD_RE.finditer(decoded_html):
+def parse_card_from_lines(lines: list[str], index_num: int) -> dict[str, str]:
+    filtered: list[str] = []
+    scores: list[str] = []
+
+    for line in lines:
+        cleaned = re.sub(r"\s+", " ", line).strip()
+        if not cleaned:
+            continue
+        low = normalize_tr(cleaned)
+        if low in NOISE_LINES:
+            continue
+        if re.search(r"\b20\d{2}\b", cleaned) and ":" in cleaned:
+            continue
+        if cleaned.isdigit():
+            scores.append(cleaned)
+            continue
+        if not filtered or filtered[-1] != cleaned:
+            filtered.append(cleaned)
+
+    if len(filtered) >= 2:
+        home_team = filtered[0]
+        away_team = filtered[-1]
+        if len(scores) >= 2:
+            title = f"{home_team} {scores[0]} - {scores[1]} {away_team} (Maç Özeti)"
+        else:
+            title = f"{home_team} - {away_team} (Maç Özeti)"
+        tvg_name = f"{home_team} - {away_team}"
+    else:
+        tvg_name = f"Süper Lig Maçı {index_num}"
+        title = f"{tvg_name} (Maç Özeti)"
+
+    return {
+        "home_slug": slugify(filtered[0] if filtered else ""),
+        "away_slug": slugify(filtered[-1] if len(filtered) >= 2 else ""),
+        "group": "Süper Lig Özetleri",
+        "tvg_id": f"superlig_{index_num}_{slugify(tvg_name)}",
+        "tvg_name": tvg_name,
+        "title": title,
+    }
+
+
+def extract_duration_seconds(text: str) -> int | None:
+    decoded = decode_escaped_text(text)
+
+    for m in DURATION_FIELD_RE.finditer(decoded):
         val = int(m.group(1))
-        if 120 <= val <= 3600:
+        if 180 <= val <= 3600:
             return val
 
-    for m in MMSS_RE.finditer(decoded_html):
-        mins = int(m.group(1))
-        secs = int(m.group(2))
-        total = mins * 60 + secs
-        if 120 <= total <= 3600:
+    for m in MMSS_RE.finditer(decoded):
+        full_match = m.group(0)
+        mins_str, secs_str = full_match.split(":")
+        total = int(mins_str) * 60 + int(secs_str)
+        if 180 <= total <= 3600:
             return total
 
     return None
@@ -328,159 +232,199 @@ def score_candidate_url(url: str, meta: dict[str, str], used_urls: set[str]) -> 
     elif ".m3u8" in low:
         score += 10
 
-    week_num = meta.get("week_num", "")
-    if week_num and re.search(rf"(?:^|[_/-]){re.escape(week_num)}(?:[_/-]|$)", low):
-        score += 15
-
     hints = build_match_hints(meta)
     matched_hints = sum(1 for h in hints if h in low)
     score += matched_hints * 30
     return score
 
 
-def extract_media_url(
-    decoded_html: str, meta: dict[str, str], used_urls: set[str]
+def pick_best_media_url(
+    candidates: list[str], meta: dict[str, str], used_urls: set[str]
 ) -> str:
-    candidates = MEDIA_URL_RE.findall(decoded_html)
-
-    unique_candidates: list[str] = []
+    unique: list[str] = []
     for raw in candidates:
-        u = raw.rstrip("\\\"',;)]}")
-        if is_valid_url(u) and u not in unique_candidates:
-            unique_candidates.append(u)
+        u = raw.strip().rstrip("\\\"',;)]}")
+        if is_valid_url(u) and u not in unique and u not in used_urls:
+            unique.append(u)
 
-    if not unique_candidates:
+    if not unique:
         return ""
 
     ranked = sorted(
-        unique_candidates,
+        unique,
         key=lambda u: score_candidate_url(u, meta, used_urls),
         reverse=True,
     )
-    best = ranked[0]
-    if best in used_urls:
-        return ""
-    return best
+    return ranked[0]
 
 
-def extract_logo(soup: BeautifulSoup, base_url: str, meta: dict[str, str]) -> str:
-    week_prefix = f"{meta['week_num']}_" if meta.get("week_num") else ""
-    hints = build_match_hints(meta)
-
-    for img in soup.find_all("img"):
-        src = (img.get("data-src") or img.get("src") or "").strip()
-        if not src:
-            continue
-        full_src = urljoin(base_url, src)
-        low_src = full_src.lower()
-        if "match_posters" in low_src and (
-            (week_prefix and week_prefix in low_src)
-            or any(h in low_src for h in hints)
-        ):
-            return full_src
-
-    for img in soup.find_all("img"):
-        src = (img.get("data-src") or img.get("src") or "").strip()
-        if not src:
-            continue
-        full_src = urljoin(base_url, src)
-        low_src = full_src.lower()
-        if any(ext in low_src for ext in (".jpg", ".jpeg", ".png", ".webp")):
-            if "logo" not in low_src and "icon" not in low_src:
-                return full_src
-
-    return ""
+def collect_media_from_text(text: str) -> list[str]:
+    decoded = decode_escaped_text(text)
+    return MEDIA_URL_RE.findall(decoded)
 
 
-def collect_ozeti_izle_links(
-    main_html: str, base_url: str
-) -> list[tuple[str, dict[str, str]]]:
-    """
-    Sadece metni veya etiketi 'ÖZETİ İZLE' olan buton/linkleri toplar.
-    """
-    decoded = decode_escaped_text(main_html)
-    soup = BeautifulSoup(decoded, "html.parser")
-    found: list[tuple[str, dict[str, str]]] = []
-    seen_pages: set[str] = set()
-
-    for a in soup.find_all("a", href=True):
-        link_text = normalize_tr(re.sub(r"\s+", " ", a.get_text(" ", strip=True)))
-        aria_label = normalize_tr(a.get("aria-label", ""))
-        title_attr = normalize_tr(a.get("title", ""))
-
-        if (
-            "özeti izle" not in link_text
-            and "ozeti izle" not in link_text
-            and "özeti izle" not in aria_label
-            and "özeti izle" not in title_attr
-        ):
-            continue
-
-        href = a["href"].strip()
-        if not href or href.startswith("#") or href.lower().startswith("javascript:"):
-            continue
-
-        full_url = urljoin(base_url, href)
-        if full_url in seen_pages:
-            continue
-
-        seen_pages.add(full_url)
-        card_info = parse_card_details(a)
-        meta = parse_ozet_page_url(full_url, card_info)
-        found.append((full_url, meta))
-
-    return found
+def find_ozeti_izle_locators(page: Page):
+    return page.locator("a, button, [role='button'], div, span").filter(
+        has_text=re.compile(r"^\s*özeti\s+izle\s*$", re.IGNORECASE)
+    )
 
 
-def extract_fresh_entries(main_html: str, base_url: str) -> list[dict[str, str]]:
-    main_soup = BeautifulSoup(decode_escaped_text(main_html), "html.parser")
-    ozet_pages = collect_ozeti_izle_links(main_html, base_url)
-    print(f"Ana sayfada {len(ozet_pages)} adet 'ÖZETİ İZLE' bağlantısı bulundu.")
+def get_card_lines_for_index(page: Page, idx: int) -> list[str]:
+    return page.evaluate(
+        """(index) => {
+            const nodes = Array.from(document.querySelectorAll('a, button, [role="button"], div, span'));
+            const matches = nodes.filter(el => {
+                const txt = (el.innerText || el.textContent || '').replace(/\\s+/g, ' ').trim().toLowerCase();
+                return txt === 'özeti izle' || txt === 'ozeti izle';
+            });
+            const target = matches[index];
+            if (!target) return [];
 
+            let cur = target;
+            for (let i = 0; i < 6; i++) {
+                if (!cur.parentElement) break;
+                cur = cur.parentElement;
+                const lines = (cur.innerText || '')
+                    .split('\\n')
+                    .map(s => s.replace(/\\s+/g, ' ').trim())
+                    .filter(Boolean);
+                const hasSummary = lines.some(l => l.toLowerCase().includes('özeti izle') || l.toLowerCase().includes('ozeti izle'));
+                if (hasSummary && lines.length >= 4 && lines.length <= 25) {
+                    return lines;
+                }
+            }
+            return [];
+        }""",
+        idx,
+    )
+
+
+def scrape_with_playwright(source_url: str) -> list[dict[str, str]]:
     entries: list[dict[str, str]] = []
     used_urls: set[str] = set()
     seen_ids: set[str] = set()
 
-    for page_url, meta in ozet_pages:
-        if meta["tvg_id"] in seen_ids:
-            continue
-
-        try:
-            page_html = fetch_html(page_url)
-        except Exception as exc:
-            print(f"[HATA] Özet sayfası alınamadı ({page_url}): {exc}")
-            continue
-
-        decoded_page = decode_escaped_text(page_html)
-        duration_sec = extract_duration_seconds(decoded_page)
-        duration_ok, duration_reason = is_target_duration(duration_sec)
-        if not duration_ok:
-            print(f"[ATLA - SÜRE] {meta['title']} -> {duration_reason}")
-            continue
-
-        media_url = extract_media_url(decoded_page, meta, used_urls)
-        if not media_url:
-            print(f"[UYARI] Medya URL bulunamadı: {meta['title']} -> {page_url}")
-            continue
-
-        used_urls.add(media_url)
-        seen_ids.add(meta["tvg_id"])
-        page_soup = BeautifulSoup(decoded_page, "html.parser")
-        logo = extract_logo(page_soup, page_url, meta) or extract_logo(
-            main_soup, base_url, meta
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        context = browser.new_context(
+            user_agent=(
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) "
+                "Chrome/126.0.0.0 Safari/537.36"
+            ),
+            locale="tr-TR",
         )
+        page = context.new_page()
+        page.goto(source_url, wait_until="domcontentloaded", timeout=45000)
+        page.wait_for_timeout(3000)
 
-        print(f"[OK] {meta['title']} ({duration_reason}) -> {media_url}")
-        entries.append(
-            {
-                "tvg_id": meta["tvg_id"],
-                "tvg_name": meta["tvg_name"],
-                "tvg_logo": logo,
-                "group": meta["group"],
-                "title": meta["title"],
-                "url": media_url,
-            }
-        )
+        locator = find_ozeti_izle_locators(page)
+        total = locator.count()
+        print(f"Sayfada {total} adet 'ÖZETİ İZLE' elemanı bulundu.")
+
+        for idx in range(total):
+            card_lines = get_card_lines_for_index(page, idx)
+            meta = parse_card_from_lines(card_lines, idx + 1)
+
+            if meta["tvg_id"] in seen_ids:
+                continue
+
+            captured_urls: list[str] = []
+            captured_texts: list[str] = []
+
+            def on_request(req):
+                u = req.url
+                if re.search(r"\.(?:mp4|m3u8)(?:\?|$)", u, re.IGNORECASE):
+                    captured_urls.append(u)
+
+            def on_response(res):
+                u = res.url
+                if re.search(r"\.(?:mp4|m3u8)(?:\?|$)", u, re.IGNORECASE):
+                    captured_urls.append(u)
+                ct = (res.headers.get("content-type") or "").lower()
+                if any(k in ct for k in ("json", "javascript", "text", "xml", "mpegurl")):
+                    try:
+                        body = res.text()
+                        if "akamaized.net" in body or ".mp4" in body or ".m3u8" in body:
+                            captured_texts.append(body)
+                            captured_urls.extend(collect_media_from_text(body))
+                    except Exception:
+                        pass
+
+            context.on("request", on_request)
+            context.on("response", on_response)
+
+            active_page = page
+            popup_page = None
+            start_url = page.url
+
+            try:
+                target = find_ozeti_izle_locators(page).nth(idx)
+                target.scroll_into_view_if_needed(timeout=8000)
+
+                try:
+                    with context.expect_page(timeout=4000) as popup_info:
+                        target.click(timeout=8000)
+                    popup_page = popup_info.value
+                    popup_page.wait_for_load_state("domcontentloaded", timeout=20000)
+                    popup_page.wait_for_timeout(3000)
+                    active_page = popup_page
+                except Exception:
+                    page.wait_for_timeout(3000)
+
+                combined_blob = "\n".join(captured_texts)
+                try:
+                    dom_html = active_page.content()
+                    dom_text = active_page.inner_text("body")
+                    combined_blob += "\n" + dom_html + "\n" + dom_text
+                    captured_urls.extend(collect_media_from_text(dom_html))
+                except Exception:
+                    pass
+
+                duration_sec = extract_duration_seconds(combined_blob)
+                duration_ok, duration_reason = is_target_duration(duration_sec)
+                if not duration_ok:
+                    print(f"[ATLA - SÜRE] {meta['title']} -> {duration_reason}")
+                    continue
+
+                media_url = pick_best_media_url(captured_urls, meta, used_urls)
+                if not media_url:
+                    print(f"[UYARI] Tıklama sonrası medya URL bulunamadı: {meta['title']}")
+                    continue
+
+                used_urls.add(media_url)
+                seen_ids.add(meta["tvg_id"])
+                print(f"[OK] {meta['title']} ({duration_reason}) -> {media_url}")
+
+                entries.append(
+                    {
+                        "tvg_id": meta["tvg_id"],
+                        "tvg_name": meta["tvg_name"],
+                        "tvg_logo": "",
+                        "group": meta["group"],
+                        "title": meta["title"],
+                        "url": media_url,
+                    }
+                )
+
+            except Exception as exc:
+                print(f"[HATA] {meta['title']} için tıklama/yakalama hatası: {exc}")
+            finally:
+                context.remove_listener("request", on_request)
+                context.remove_listener("response", on_response)
+                if popup_page is not None and not popup_page.is_closed():
+                    try:
+                        popup_page.close()
+                    except Exception:
+                        pass
+                if page.url != start_url:
+                    try:
+                        page.goto(start_url, wait_until="domcontentloaded", timeout=30000)
+                        page.wait_for_timeout(2000)
+                    except Exception:
+                        pass
+
+        browser.close()
 
     return entries
 
@@ -501,16 +445,14 @@ def write_m3u8(items: list[dict[str, str]], output_path: str) -> None:
 
 
 def main() -> None:
-    main_html = fetch_html(SOURCE_URL)
-    fresh_entries = extract_fresh_entries(main_html, SOURCE_URL)
-
+    fresh_entries = scrape_with_playwright(SOURCE_URL)
     if not fresh_entries:
         raise RuntimeError(
-            "'ÖZETİ İZLE' bağlantılarından 7-8 dakikalık yeni video bulunamadı."
+            "7-8 dakikalık aralığa uyan yeni video akışı yakalanamadı."
         )
 
     write_m3u8(fresh_entries, OUTPUT_FILE)
-    print(f"Sadece {len(fresh_entries)} yeni özet {OUTPUT_FILE} dosyasına yazıldı.")
+    print(f"Yalnızca {len(fresh_entries)} yeni kayıt {OUTPUT_FILE} dosyasına yazıldı.")
 
 
 if __name__ == "__main__":
