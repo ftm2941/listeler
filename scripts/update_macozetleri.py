@@ -1,6 +1,6 @@
 import os
 import re
-from urllib.parse import unquote, urlparse
+from urllib.parse import unquote, urljoin, urlparse
 
 from playwright.sync_api import Page, sync_playwright
 
@@ -8,9 +8,14 @@ SOURCE_URL = os.getenv(
     "SOURCE_URL", "https://beinsports.com.tr/mac-ozetleri-goller/super-lig"
 )
 OUTPUT_FILE = os.getenv("OUTPUT_FILE", "macozetleri.m3u8")
-MIN_DURATION_SEC = int(os.getenv("MIN_DURATION_SEC", "540"))  # 9 dk 00 sn
-MAX_DURATION_SEC = int(os.getenv("MAX_DURATION_SEC", "660"))  # 11 dk 00 sn
-REQUIRE_DURATION = os.getenv("REQUIRE_DURATION", "false").strip().lower() in (
+FILTER_BY_DURATION = os.getenv("FILTER_BY_DURATION", "false").strip().lower() in (
+    "1",
+    "true",
+    "yes",
+)
+MIN_DURATION_SEC = int(os.getenv("MIN_DURATION_SEC", "420"))
+MAX_DURATION_SEC = int(os.getenv("MAX_DURATION_SEC", "660"))
+ALLOW_DUPLICATE_URLS = os.getenv("ALLOW_DUPLICATE_URLS", "true").strip().lower() in (
     "1",
     "true",
     "yes",
@@ -165,9 +170,6 @@ def parse_card_from_lines(lines: list[str], index_num: int) -> dict[str, str]:
 
 
 def read_player_duration_seconds(target_page: Page) -> int | None:
-    """
-    Ana sayfa ve tüm iframe'lerdeki <video> oynatıcıların gerçek süresini okur.
-    """
     frames = [target_page.main_frame] + [
         f for f in target_page.frames if f != target_page.main_frame
     ]
@@ -182,7 +184,7 @@ def read_player_duration_seconds(target_page: Page) -> int | None:
                             return Math.round(v.duration);
                         }
                         await new Promise((resolve) => {
-                            const timer = setTimeout(resolve, 1200);
+                            const timer = setTimeout(resolve, 1000);
                             v.addEventListener('loadedmetadata', () => {
                                 clearTimeout(timer);
                                 resolve();
@@ -204,17 +206,13 @@ def read_player_duration_seconds(target_page: Page) -> int | None:
 
 
 def is_target_duration(duration_sec: int | None) -> tuple[bool, str]:
+    if not FILTER_BY_DURATION:
+        return True, f"filtre kapalı ({duration_sec} sn)" if duration_sec else "filtre kapalı"
     if duration_sec is None:
-        if REQUIRE_DURATION:
-            return False, "oynatıcı süresi okunamadı"
-        return True, "oynatıcı süresi okunamadı (izinli)"
-
+        return True, "süre yok (izinli)"
     if MIN_DURATION_SEC <= duration_sec <= MAX_DURATION_SEC:
-        return True, f"oynatıcı süresi uygun ({duration_sec} sn)"
-    return (
-        False,
-        f"oynatıcı süresi {duration_sec} sn ({MIN_DURATION_SEC}-{MAX_DURATION_SEC} sn dışında)",
-    )
+        return True, f"uygun süre ({duration_sec} sn)"
+    return False, f"süre {duration_sec} sn ({MIN_DURATION_SEC}-{MAX_DURATION_SEC} sn dışında)"
 
 
 def build_match_hints(meta: dict[str, str]) -> list[str]:
@@ -232,10 +230,9 @@ def build_match_hints(meta: dict[str, str]) -> list[str]:
 
 def score_candidate_url(url: str, meta: dict[str, str], used_urls: set[str]) -> int:
     low = url.lower()
-    if url in used_urls:
-        return -999
-
     score = 0
+    if not ALLOW_DUPLICATE_URLS and url in used_urls:
+        score -= 200
     if "akamaized.net" in low:
         score += 35
     if "hdnts=" in low:
@@ -257,14 +254,23 @@ def pick_best_media_url(
     unique: list[str] = []
     for raw in candidates:
         u = raw.strip().rstrip("\\\"',;)]}")
-        if is_valid_url(u) and u not in unique and u not in used_urls:
+        if is_valid_url(u) and u not in unique:
             unique.append(u)
 
     if not unique:
         return ""
 
+    if not ALLOW_DUPLICATE_URLS:
+        fresh = [u for u in unique if u not in used_urls]
+        pool = fresh if fresh else []
+    else:
+        pool = unique
+
+    if not pool:
+        return ""
+
     ranked = sorted(
-        unique,
+        pool,
         key=lambda u: score_candidate_url(u, meta, used_urls),
         reverse=True,
     )
@@ -296,7 +302,7 @@ def dismiss_consent_popups(page: Page) -> None:
             pass
 
 
-def scroll_page_to_load_all(page: Page, steps: int = 4) -> None:
+def scroll_page_to_load_all(page: Page, steps: int = 5) -> None:
     for _ in range(steps):
         page.evaluate("window.scrollBy(0, Math.floor(window.innerHeight * 0.9))")
         page.wait_for_timeout(300)
@@ -327,33 +333,31 @@ def collect_target_elements_js() -> str:
     }"""
 
 
-def count_target_matches(page: Page) -> int:
-    return page.evaluate(f"() => {{ const fn = {collect_target_elements_js()}; return fn().length; }}")
-
-
-def get_card_lines_for_index(page: Page, idx: int) -> list[str]:
+def snapshot_targets(page: Page) -> list[dict]:
     return page.evaluate(
-        f"""(index) => {{
+        f"""() => {{
             const fn = {collect_target_elements_js()};
             const matches = fn();
-            const target = matches[index];
-            if (!target) return [];
-
-            let cur = target;
-            for (let i = 0; i < 8; i++) {{
-                if (!cur.parentElement) break;
-                cur = cur.parentElement;
-                const lines = (cur.innerText || cur.textContent || '')
-                    .split('\\n')
-                    .map(s => s.replace(/\\s+/g, ' ').trim())
-                    .filter(Boolean);
-                if (lines.length >= 3 && lines.length <= 35) {{
-                    return lines;
+            return matches.map((target, idx) => {{
+                let lines = [];
+                let cur = target;
+                for (let i = 0; i < 8; i++) {{
+                    if (!cur.parentElement) break;
+                    cur = cur.parentElement;
+                    const l = (cur.innerText || cur.textContent || '')
+                        .split('\\n')
+                        .map(s => s.replace(/\\s+/g, ' ').trim())
+                        .filter(Boolean);
+                    if (l.length >= 3 && l.length <= 35) {{
+                        lines = l;
+                        break;
+                    }}
                 }}
-            }}
-            return [];
-        }}""",
-        idx,
+                const anchor = target.tagName === 'A' ? target : target.closest('a');
+                const href = anchor ? (anchor.getAttribute('href') || '') : '';
+                return {{ idx, lines, href }};
+            }});
+        }}"""
     )
 
 
@@ -372,10 +376,46 @@ def click_target_by_index(page: Page, idx: int) -> bool:
     )
 
 
+def collect_dom_media_urls(target_page: Page, base_url: str) -> list[str]:
+    found: list[str] = []
+    frames = [target_page.main_frame] + [
+        f for f in target_page.frames if f != target_page.main_frame
+    ]
+    for frame in frames:
+        try:
+            srcs = frame.evaluate(
+                """() => {
+                    const out = [];
+                    document.querySelectorAll('video, source, iframe').forEach(el => {
+                        ['src', 'data-src', 'data-video-src', 'data-stream'].forEach(attr => {
+                            const val = el.getAttribute(attr);
+                            if (val) out.push(val);
+                        });
+                        if (el.currentSrc) out.push(el.currentSrc);
+                    });
+                    return out;
+                }"""
+            )
+            for s in srcs or []:
+                full = urljoin(base_url, s)
+                if re.search(r"\.(?:mp4|m3u8)(?:\?|$)", full, re.IGNORECASE):
+                    found.append(full)
+        except Exception:
+            continue
+
+    try:
+        html = target_page.content()
+        found.extend(collect_media_from_text(html))
+    except Exception:
+        pass
+
+    return found
+
+
 def scrape_with_playwright(source_url: str) -> list[dict[str, str]]:
     entries: list[dict[str, str]] = []
     used_urls: set[str] = set()
-    seen_ids: set[str] = set()
+    seen_keys: set[str] = set()
 
     with sync_playwright() as p:
         browser = p.chromium.launch(
@@ -403,15 +443,25 @@ def scrape_with_playwright(source_url: str) -> list[dict[str, str]]:
         dismiss_consent_popups(page)
         scroll_page_to_load_all(page)
 
-        total = count_target_matches(page)
-        print(f"Sayfada {total} adet hedef ('ÖZETİ İZLE' / özet) elemanı bulundu.")
+        snapshots = snapshot_targets(page)
+        total = len(snapshots)
+        print(f"Sayfada {total} adet 'ÖZETİ İZLE' / özet bölümü bulundu.")
 
-        for idx in range(total):
-            card_lines = get_card_lines_for_index(page, idx)
-            meta = parse_card_from_lines(card_lines, idx + 1)
-
-            if meta["tvg_id"] in seen_ids:
+        for item in snapshots:
+            idx = item["idx"]
+            meta = parse_card_from_lines(item.get("lines") or [], idx + 1)
+            unique_key = f"{idx}_{meta['tvg_id']}"
+            if unique_key in seen_keys:
                 continue
+
+            if page.url != source_url:
+                try:
+                    page.goto(source_url, wait_until="domcontentloaded", timeout=20000)
+                    page.wait_for_timeout(1200)
+                    dismiss_consent_popups(page)
+                    scroll_page_to_load_all(page)
+                except Exception:
+                    pass
 
             captured_urls: list[str] = []
 
@@ -438,7 +488,6 @@ def scrape_with_playwright(source_url: str) -> list[dict[str, str]]:
 
             active_page = page
             popup_page = None
-            start_url = page.url
 
             try:
                 try:
@@ -453,11 +502,7 @@ def scrape_with_playwright(source_url: str) -> list[dict[str, str]]:
                 except Exception:
                     page.wait_for_timeout(1500)
 
-                try:
-                    dom_html = active_page.content()
-                    captured_urls.extend(collect_media_from_text(dom_html))
-                except Exception:
-                    pass
+                captured_urls.extend(collect_dom_media_urls(active_page, active_page.url))
 
                 duration_sec = read_player_duration_seconds(active_page)
                 duration_ok, duration_reason = is_target_duration(duration_sec)
@@ -467,11 +512,11 @@ def scrape_with_playwright(source_url: str) -> list[dict[str, str]]:
 
                 media_url = pick_best_media_url(captured_urls, meta, used_urls)
                 if not media_url:
-                    print(f"[UYARI] Tıklama sonrası medya URL bulunamadı: {meta['title']}")
+                    print(f"[UYARI] Medya URL bulunamadı: {meta['title']}")
                     continue
 
                 used_urls.add(media_url)
-                seen_ids.add(meta["tvg_id"])
+                seen_keys.add(unique_key)
                 print(f"[OK] {meta['title']} ({duration_reason}) -> {media_url}")
 
                 entries.append(
@@ -493,12 +538,6 @@ def scrape_with_playwright(source_url: str) -> list[dict[str, str]]:
                 if popup_page is not None and not popup_page.is_closed():
                     try:
                         popup_page.close()
-                    except Exception:
-                        pass
-                if page.url != start_url:
-                    try:
-                        page.goto(start_url, wait_until="domcontentloaded", timeout=20000)
-                        page.wait_for_timeout(1000)
                     except Exception:
                         pass
 
@@ -525,12 +564,10 @@ def write_m3u8(items: list[dict[str, str]], output_path: str) -> None:
 def main() -> None:
     fresh_entries = scrape_with_playwright(SOURCE_URL)
     if not fresh_entries:
-        raise RuntimeError(
-            "10 dakikalık aralığa uyan yeni video akışı yakalanamadı."
-        )
+        raise RuntimeError("Yeni video akışı yakalanamadı.")
 
     write_m3u8(fresh_entries, OUTPUT_FILE)
-    print(f"Yalnızca {len(fresh_entries)} yeni kayıt {OUTPUT_FILE} dosyasına yazıldı.")
+    print(f"Toplam {len(fresh_entries)} özet kaydı {OUTPUT_FILE} dosyasına yazıldı.")
 
 
 if __name__ == "__main__":
