@@ -3,7 +3,7 @@ name: Update macozetleri.m3u8
 on:
   schedule:
     - cron: "0 */3 * * *" # Her 3 saatte bir (UTC)
-  workflow_dispatch: # GitHub arayüzünden tek tıkla manuel çalıştırma
+  workflow_dispatch:
 
 permissions:
   contents: write
