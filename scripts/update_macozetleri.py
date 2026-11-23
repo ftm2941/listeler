@@ -28,10 +28,6 @@ def fetch_html(url: str) -> str:
 
 
 def extract_entries(html: str, base_url: str) -> list[tuple[str, str]]:
-    """
-    (baslik, akis_veya_sayfa_url) ikililerinin listesini döndürür.
-    Sayfa yapısına göre seçicileri ve URL filtrelerini güncellemen gerekir.
-    """
     soup = BeautifulSoup(html, "html.parser")
     entries: list[tuple[str, str]] = []
     seen_urls: set[str] = set()
@@ -40,7 +36,6 @@ def extract_entries(html: str, base_url: str) -> list[tuple[str, str]]:
         href = link["href"].strip()
         full_url = urljoin(base_url, href)
 
-        # Örnek filtre: özet/gol içeren bağlantıları ayıkla
         if any(k in full_url.lower() for k in ("ozet", "gol", ".m3u8")):
             title = re.sub(r"\s+", " ", link.get_text(" ", strip=True))
             if not title:
@@ -68,7 +63,9 @@ def main() -> None:
     html = fetch_html(SOURCE_URL)
     entries = extract_entries(html, SOURCE_URL)
     if not entries:
-        raise RuntimeError("Hiç kayıt bulunamadı; sayfa yapısı veya bot koruması kontrol edilmeli.")
+        raise RuntimeError(
+            "Hiç kayıt bulunamadı; sayfa yapısı veya bot koruması kontrol edilmeli."
+        )
     write_m3u8(entries, OUTPUT_FILE)
     print(f"{len(entries)} kayıt {OUTPUT_FILE} dosyasına yazıldı.")
 
