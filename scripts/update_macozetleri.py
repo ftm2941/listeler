@@ -62,8 +62,13 @@ TEAM_LABELS = {
     "kasimpasa": "Kasımpaşa",
 }
 
-STREAM_URL_RE = re.compile(
-    r"https?://[^\s\"'<>\\]+?\.mp4(?:\?[^\s\"'<>\\]*)?",
+OZET_PAGE_RE = re.compile(
+    r"/lig/super-lig/ozet/(\d{4}-\d{4})/(\d+)/([^/?#]+)",
+    re.IGNORECASE,
+)
+
+MEDIA_URL_RE = re.compile(
+    r"https?://[^\s\"'<>\\]+?\.(?:mp4|m3u8)(?:\?[^\s\"'<>\\]*)?",
     re.IGNORECASE,
 )
 
@@ -83,63 +88,108 @@ def slugify(text: str) -> str:
     return cleaned or "mac"
 
 
-def normalize_team(code: str) -> str:
-    key = code.strip().lower()
-    return TEAM_LABELS.get(key, key.replace("-", " ").title())
+def normalize_team(slug: str) -> str:
+    key = slug.strip().lower()
+    if key in TEAM_LABELS:
+        return TEAM_LABELS[key]
+    return " ".join(part.capitalize() for part in key.split("-") if part)
 
 
-def parse_stream_metadata(stream_url: str) -> dict[str, str]:
-    clean_url = unquote(stream_url).replace("\\/", "/")
-    path_name = urlparse(clean_url).path.rsplit("/", 1)[-1]
-    stem = re.sub(r"\.mp4$", "", path_name, flags=re.IGNORECASE)
+def parse_ozet_page_url(page_url: str) -> dict[str, str] | None:
+    path = urlparse(page_url).path
+    match = OZET_PAGE_RE.search(path)
+    if not match:
+        return None
 
-    # Örnek: ligtvcomtr_tauri_ozt_20262027_12_bas_cor_23kas_ip
-    match = re.search(
-        r"(?:ozt_)?(?:\d{8}_)?(\d+)_([a-z0-9-]+)_([a-z0-9-]+)_(?:\d+[a-z]+_)?ip$",
-        stem,
-        re.IGNORECASE,
-    )
-    if match:
-        week_num = match.group(1)
-        home_team = normalize_team(match.group(2))
-        away_team = normalize_team(match.group(3))
+    season, week_num, match_slug = match.groups()
+    clean_slug = re.sub(r"-mac-ozeti$", "", match_slug, flags=re.IGNORECASE)
+
+    # Örnek: istanbul-basaksehir-4-2-corumspor
+    score_match = re.match(r"^(.+?)-(\d+)-(\d+)-(.+)$", clean_slug)
+    if score_match:
+        home_raw, home_score, away_score, away_raw = score_match.groups()
+        home_team = normalize_team(home_raw)
+        away_team = normalize_team(away_raw)
         tvg_name = f"{home_team} - {away_team}"
-        title = f"{tvg_name} (Maç Özeti)"
-        group_title = f"{week_num}. Hafta"
-        tvg_id = f"superlig_{slugify(week_num)}_{slugify(home_team)}_{slugify(away_team)}"
-        return {
-            "tvg_id": tvg_id,
-            "tvg_name": tvg_name,
-            "group": group_title,
-            "title": title,
-            "stem": stem,
-        }
+        title = f"{home_team} {home_score} - {away_score} {away_team} (Maç Özeti)"
+    else:
+        parts = clean_slug.split("-vs-")
+        if len(parts) == 2:
+            home_team = normalize_team(parts[0])
+            away_team = normalize_team(parts[1])
+            tvg_name = f"{home_team} - {away_team}"
+            title = f"{tvg_name} (Maç Özeti)"
+        else:
+            tvg_name = normalize_team(clean_slug)
+            title = f"{tvg_name} (Maç Özeti)"
 
+    tvg_id = f"superlig_{week_num}_{slugify(tvg_name)}"
     return {
-        "tvg_id": f"superlig_{slugify(stem)}",
-        "tvg_name": stem,
-        "group": "Süper Lig Özetleri",
-        "title": f"{stem} (Maç Özeti)",
-        "stem": stem,
+        "season": season,
+        "week_num": week_num,
+        "group": f"{week_num}. Hafta",
+        "tvg_id": tvg_id,
+        "tvg_name": tvg_name,
+        "title": title,
     }
-
-
-def find_logo_for_stem(soup: BeautifulSoup, base_url: str, stem: str) -> str:
-    tokens = [t.lower() for t in re.split(r"[^a-z0-9]+", stem) if len(t) >= 3]
-    for img in soup.find_all("img"):
-        src = (img.get("data-src") or img.get("src") or "").strip()
-        if not src:
-            continue
-        low_src = src.lower()
-        if any(tok in low_src for tok in tokens):
-            return urljoin(base_url, src)
-    return ""
 
 
 def fetch_html(url: str) -> str:
     resp = requests.get(url, headers=HEADERS, timeout=20)
     resp.raise_for_status()
     return resp.text
+
+
+def extract_media_url(page_html: str) -> str:
+    unescaped = unquote(page_html).replace("\\/", "/").replace("\\u0026", "&")
+    candidates = MEDIA_URL_RE.findall(unescaped)
+
+    cleaned_urls: list[str] = []
+    for raw in candidates:
+        u = raw.rstrip("\\\"',;)]}")
+        if is_valid_url(u) and u not in cleaned_urls:
+            cleaned_urls.append(u)
+
+    # Önce Akamai / hdnts içeren mp4 veya m3u8 akışlarını tercih et
+    for u in cleaned_urls:
+        low = u.lower()
+        if "akamaized.net" in low or "hdnts=" in low:
+            return u
+
+    for u in cleaned_urls:
+        low = u.lower()
+        if low.endswith(".mp4") or ".mp4?" in low or ".m3u8" in low:
+            return u
+
+    return ""
+
+
+def extract_logo(soup: BeautifulSoup, base_url: str, meta: dict[str, str]) -> str:
+    week_prefix = f"{meta['week_num']}_"
+    team_slug = slugify(meta["tvg_name"])
+
+    for img in soup.find_all("img"):
+        src = (img.get("data-src") or img.get("src") or "").strip()
+        if not src:
+            continue
+        full_src = urljoin(base_url, src)
+        low_src = full_src.lower()
+        if "match_posters" in low_src and (
+            week_prefix in low_src or team_slug in low_src
+        ):
+            return full_src
+
+    for img in soup.find_all("img"):
+        src = (img.get("data-src") or img.get("src") or "").strip()
+        if not src:
+            continue
+        full_src = urljoin(base_url, src)
+        low_src = full_src.lower()
+        if any(ext in low_src for ext in (".jpg", ".jpeg", ".png", ".webp")):
+            if "logo" not in low_src and "icon" not in low_src:
+                return full_src
+
+    return ""
 
 
 def parse_existing_m3u8(path: str) -> list[dict[str, str]]:
@@ -178,36 +228,61 @@ def parse_existing_m3u8(path: str) -> list[dict[str, str]]:
     return items
 
 
-def extract_new_entries(html: str, base_url: str) -> list[dict[str, str]]:
-    unescaped_html = html.replace("\\/", "/").replace("\\u0026", "&")
-    soup = BeautifulSoup(unescaped_html, "html.parser")
+def collect_ozet_links(main_html: str, base_url: str) -> list[tuple[str, dict[str, str]]]:
+    soup = BeautifulSoup(main_html, "html.parser")
+    found: list[tuple[str, dict[str, str]]] = []
+    seen_pages: set[str] = set()
 
-    found_urls: list[str] = []
-    seen_urls: set[str] = set()
+    for a in soup.find_all("a", href=True):
+        href = a["href"].strip()
+        full_url = urljoin(base_url, href)
+        if "/lig/super-lig/ozet/" not in full_url:
+            continue
+        if full_url in seen_pages:
+            continue
 
-    for match in STREAM_URL_RE.findall(unescaped_html):
-        cleaned_url = match.rstrip("\\\"',;)]}")
-        if "akamaized.net" in cleaned_url.lower() or "hdnts=" in cleaned_url.lower():
-            if is_valid_url(cleaned_url) and cleaned_url not in seen_urls:
-                seen_urls.add(cleaned_url)
-                found_urls.append(cleaned_url)
+        meta = parse_ozet_page_url(full_url)
+        if meta:
+            seen_pages.add(full_url)
+            found.append((full_url, meta))
 
-    results: list[dict[str, str]] = []
-    for url in found_urls:
-        meta = parse_stream_metadata(url)
-        logo = find_logo_for_stem(soup, base_url, meta["stem"])
-        results.append(
+    return found
+
+
+def extract_new_entries(main_html: str, base_url: str) -> list[dict[str, str]]:
+    main_soup = BeautifulSoup(main_html, "html.parser")
+    ozet_pages = collect_ozet_links(main_html, base_url)
+    entries: list[dict[str, str]] = []
+
+    for page_url, meta in ozet_pages:
+        try:
+            page_html = fetch_html(page_url)
+        except Exception as exc:
+            print(f"Özet sayfası alınamadı ({page_url}): {exc}")
+            continue
+
+        media_url = extract_media_url(page_html)
+        if not media_url:
+            print(f"Medya bağlantısı bulunamadı ({page_url})")
+            continue
+
+        page_soup = BeautifulSoup(page_html, "html.parser")
+        logo = extract_logo(page_soup, page_url, meta) or extract_logo(
+            main_soup, base_url, meta
+        )
+
+        entries.append(
             {
                 "tvg_id": meta["tvg_id"],
                 "tvg_name": meta["tvg_name"],
                 "tvg_logo": logo,
                 "group": meta["group"],
                 "title": meta["title"],
-                "url": url,
+                "url": media_url,
             }
         )
 
-    return results
+    return entries
 
 
 def write_m3u8(items: list[dict[str, str]], output_path: str) -> None:
@@ -228,8 +303,8 @@ def write_m3u8(items: list[dict[str, str]], output_path: str) -> None:
 def main() -> None:
     existing = parse_existing_m3u8(OUTPUT_FILE)
     try:
-        html = fetch_html(SOURCE_URL)
-        fresh = extract_new_entries(html, SOURCE_URL)
+        main_html = fetch_html(SOURCE_URL)
+        fresh = extract_new_entries(main_html, SOURCE_URL)
     except Exception as exc:
         print(f"Kaynak çekilirken hata oluştu: {exc}")
         if existing:
@@ -239,18 +314,18 @@ def main() -> None:
         raise
 
     merged: list[dict[str, str]] = []
-    seen_keys: set[str] = set()
+    seen_ids: set[str] = set()
 
     for item in fresh + existing:
-        key = item["tvg_id"] or item["url"]
-        if key and key not in seen_keys and is_valid_url(item["url"]):
-            seen_keys.add(key)
+        item_key = item["tvg_id"] or item["url"]
+        if item_key and item_key not in seen_ids and is_valid_url(item["url"]):
+            seen_ids.add(item_key)
             merged.append(item)
 
     if not merged:
         raise RuntimeError(
-            "Sayfa içeriğinde .mp4 akış bağlantısı bulunamadı; "
-            "bağlantılar dinamik API veya ayrı oynatıcı isteğiyle dönüyor olabilir."
+            "Özet sayfasından medya URL'si çekilemedi; "
+            "video oynatıcı verisi JS/API ile sonradan yükleniyor olabilir."
         )
 
     write_m3u8(merged, OUTPUT_FILE)
