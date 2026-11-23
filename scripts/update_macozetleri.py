@@ -1,3 +1,4 @@
+import codecs
 import os
 import re
 from urllib.parse import unquote, urljoin, urlparse
@@ -165,6 +166,16 @@ def fetch_html(url: str) -> str:
     return resp.text
 
 
+def decode_escaped_text(raw_text: str) -> str:
+    text = unquote(raw_text).replace("\\/", "/").replace("\\u0026", "&")
+    if "\\u00" in text or "\\x" in text:
+        try:
+            text = codecs.decode(text, "unicode_escape")
+        except Exception:
+            pass
+    return text
+
+
 def build_match_hints(meta: dict[str, str]) -> list[str]:
     hints: list[str] = []
     for team_slug in (meta.get("home_slug", ""), meta.get("away_slug", "")):
@@ -185,9 +196,9 @@ def score_candidate_url(url: str, meta: dict[str, str], used_urls: set[str]) -> 
 
     score = 0
     if "akamaized.net" in low:
-        score += 30
+        score += 35
     if "hdnts=" in low:
-        score += 20
+        score += 25
     if ".mp4" in low:
         score += 15
     elif ".m3u8" in low:
@@ -199,15 +210,15 @@ def score_candidate_url(url: str, meta: dict[str, str], used_urls: set[str]) -> 
 
     hints = build_match_hints(meta)
     matched_hints = sum(1 for h in hints if h in low)
-    score += matched_hints * 25
+    score += matched_hints * 30
     return score
 
 
 def extract_media_url(
     page_html: str, meta: dict[str, str], used_urls: set[str]
 ) -> str:
-    unescaped = unquote(page_html).replace("\\/", "/").replace("\\u0026", "&")
-    candidates = MEDIA_URL_RE.findall(unescaped)
+    decoded = decode_escaped_text(page_html)
+    candidates = MEDIA_URL_RE.findall(decoded)
 
     unique_candidates: list[str] = []
     for raw in candidates:
@@ -294,7 +305,8 @@ def parse_existing_m3u8(path: str) -> list[dict[str, str]]:
 
 
 def collect_ozet_links(main_html: str, base_url: str) -> list[tuple[str, dict[str, str]]]:
-    soup = BeautifulSoup(main_html, "html.parser")
+    decoded = decode_escaped_text(main_html)
+    soup = BeautifulSoup(decoded, "html.parser")
     found: list[tuple[str, dict[str, str]]] = []
     seen_pages: set[str] = set()
 
@@ -311,12 +323,28 @@ def collect_ozet_links(main_html: str, base_url: str) -> list[tuple[str, dict[st
             seen_pages.add(full_url)
             found.append((full_url, meta))
 
+    if not found:
+        for match in re.finditer(
+            r"https?://[^\s\"'<>\\]+/lig/super-lig/ozet/[^\s\"'<>\\]+|/lig/super-lig/ozet/[^\s\"'<>\\]+",
+            decoded,
+            re.IGNORECASE,
+        ):
+            full_url = urljoin(base_url, match.group(0).rstrip("\\\"',;)]}"))
+            if full_url in seen_pages:
+                continue
+            meta = parse_ozet_page_url(full_url)
+            if meta:
+                seen_pages.add(full_url)
+                found.append((full_url, meta))
+
     return found
 
 
 def extract_new_entries(main_html: str, base_url: str) -> list[dict[str, str]]:
-    main_soup = BeautifulSoup(main_html, "html.parser")
+    main_soup = BeautifulSoup(decode_escaped_text(main_html), "html.parser")
     ozet_pages = collect_ozet_links(main_html, base_url)
+    print(f"Ana sayfada {len(ozet_pages)} adet /lig/super-lig/ozet/ linki bulundu.")
+
     entries: list[dict[str, str]] = []
     used_urls: set[str] = set()
 
@@ -324,20 +352,21 @@ def extract_new_entries(main_html: str, base_url: str) -> list[dict[str, str]]:
         try:
             page_html = fetch_html(page_url)
         except Exception as exc:
-            print(f"Özet sayfası alınamadı ({page_url}): {exc}")
+            print(f"[HATA] Özet sayfası alınamadı ({page_url}): {exc}")
             continue
 
         media_url = extract_media_url(page_html, meta, used_urls)
         if not media_url:
-            print(f"Benzersiz medya bağlantısı bulunamadı ({page_url})")
+            print(f"[UYARI] Medya URL bulunamadı: {meta['title']} -> {page_url}")
             continue
 
         used_urls.add(media_url)
-        page_soup = BeautifulSoup(page_html, "html.parser")
+        page_soup = BeautifulSoup(decode_escaped_text(page_html), "html.parser")
         logo = extract_logo(page_soup, page_url, meta) or extract_logo(
             main_soup, base_url, meta
         )
 
+        print(f"[OK] {meta['title']} -> {media_url}")
         entries.append(
             {
                 "tvg_id": meta["tvg_id"],
@@ -380,23 +409,39 @@ def main() -> None:
             return
         raise
 
-    merged: list[dict[str, str]] = []
-    seen_ids: set[str] = set()
-
-    for item in fresh + existing:
-        item_key = item["tvg_id"] or item["url"]
-        if item_key and item_key not in seen_ids and is_valid_url(item["url"]):
-            seen_ids.add(item_key)
-            merged.append(item)
-
-    if not merged:
+    if not fresh:
+        if existing:
+            print(
+                "Yeni canlı medya URL'si bulunamadı; mevcut macozetleri.m3u8 korunuyor."
+            )
+            write_m3u8(existing, OUTPUT_FILE)
+            return
         raise RuntimeError(
             "Özet sayfasından medya URL'si çekilemedi; "
-            "video oynatıcı verisi JS/API ile sonradan yükleniyor olabilir."
+            "video bağlantısı dinamik JS veya harici oynatıcı isteğiyle üretiliyor olabilir."
         )
 
+    # Yeni çekilen kayıtlar aynı tvg_id varsa mevcut kaydın üzerine yazılır
+    fresh_by_id = {
+        (item["tvg_id"] or item["url"]): item
+        for item in fresh
+        if is_valid_url(item["url"])
+    }
+
+    merged: list[dict[str, str]] = list(fresh_by_id.values())
+    seen_ids: set[str] = set(fresh_by_id.keys())
+
+    for old_item in existing:
+        old_key = old_item["tvg_id"] or old_item["url"]
+        if old_key and old_key not in seen_ids and is_valid_url(old_item["url"]):
+            seen_ids.add(old_key)
+            merged.append(old_item)
+
     write_m3u8(merged, OUTPUT_FILE)
-    print(f"Toplam {len(merged)} kayıt {OUTPUT_FILE} dosyasına yazıldı.")
+    print(
+        f"Güncellendi: {len(fresh_by_id)} yeni/taze kayıt, "
+        f"toplam {len(merged)} kayıt {OUTPUT_FILE} dosyasına yazıldı."
+    )
 
 
 if __name__ == "__main__":
