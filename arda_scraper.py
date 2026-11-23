@@ -17,7 +17,7 @@ channels = [
     ("A Spor", "aspor", "tracks", "https://cdn.aptoide.com/imgs/5/0/d/50d4bfd3c109b25b96c8e95c4d9d7df9_icon.png")
 ]
 
-BASE_DOMAIN = "https://css.d6e3eds5e065t5.help"
+BASE_DOMAIN = "https://css.d6e3ess6e065r5.help/"
 
 def generate_playlist():
     m3u_lines = [
