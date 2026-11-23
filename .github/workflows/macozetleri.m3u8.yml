@@ -14,6 +14,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -43,7 +45,20 @@ jobs:
           git add macozetleri.m3u8
           if git diff --staged --quiet; then
             echo "Değişiklik yok, commit atlanıyor."
-          else
-            git commit -m "chore: update macozetleri.m3u8 [skip ci]"
-            git push
+            exit 0
           fi
+
+          git commit -m "chore: update macozetleri.m3u8 [skip ci]"
+
+          for attempt in 1 2 3; do
+            git pull --rebase --autostash origin main
+            if git push origin main; then
+              echo "Push başarılı."
+              exit 0
+            fi
+            echo "Push denemesi $attempt başarısız, tekrar deneniyor..."
+            sleep 2
+          done
+
+          echo "Tüm push denemeleri başarısız oldu."
+          exit 1
