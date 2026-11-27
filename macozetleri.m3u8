@@ -1,4 +1,8 @@
 #EXTM3U
+#EXTINF:-1 tvg-id="superlig_caykur-rizespor-3-2-kasimpasa-mac-ozeti" tvg-name="Çaykur Rizespor Kasımpaşa" tvg-logo="https://media03.tr.beinsports.com/img/highlights/1515854.jpg" group-title="Süper Lig Özetleri",Çaykur Rizespor Kasımpaşa (Maç Özeti)
+https://dt-vod-beinsports.akamaized.net/2/1d/c496/ligtvcomtr_tauri_ozt_20262027_13_riza_kas_13h_27kas_ip.mp4?hdnts=test~hmac=2c7e463584e68e56486c0e2a12ab02f5f83671f194ddf5212e569d52c051e80c
+#EXTINF:-1 tvg-id="superlig_corendon-alanyaspor-1-2-ittifak-holding-konyaspor-mac-ozeti" tvg-name="Corendon Alanyaspor Tümosan Konyaspor" tvg-logo="https://media01.tr.beinsports.com/img/highlights/1515852.jpg" group-title="Süper Lig Özetleri",Corendon Alanyaspor Tümosan Konyaspor (Maç Özeti)
+https://dt-vod-beinsports.akamaized.net/5/ad/c03a/ligtvcomtr_tauri_ozt_20262027_13_ala_kon_13h_27kas_ip.mp4?hdnts=test~hmac=2c7e463584e68e56486c0e2a12ab02f5f83671f194ddf5212e569d52c051e80c
 #EXTINF:-1 tvg-id="superlig_amedspor-0-2-caykur-rizespor-mac-ozeti" tvg-name="Amed Sportif Faaliyetler Çaykur Rizespor" tvg-logo="https://media01.tr.beinsports.com/img/highlights/1515843.jpg" group-title="Süper Lig Özetleri",Amed Sportif Faaliyetler Çaykur Rizespor (Maç Özeti)
 https://dt-vod-beinsports.akamaized.net/5/51/2b5a/ligtvcomtr_tauri_ozt_20262027_12_amed_rize_21kas_ip.mp4?hdnts=test~hmac=2c7e463584e68e56486c0e2a12ab02f5f83671f194ddf5212e569d52c051e80c
 #EXTINF:-1 tvg-id="superlig_bsb-erzurumspor-0-1-goztepe-mac-ozeti" tvg-name="Erzurumspor FK Göztepe" tvg-logo="https://media02.tr.beinsports.com/img/highlights/ozet.jpg" group-title="Süper Lig Özetleri",Erzurumspor FK Göztepe (Maç Özeti)
