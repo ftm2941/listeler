@@ -257,6 +257,23 @@ def ajax_bolumleri(s: requests.Session, sayfa: int) -> list[Bolum]:
     return sonuc
 
 
+def youtube_id_bul(metin: str) -> str | None:
+    '''Bir HTML/URL icinden YouTube video ID'sini cikarir.'''
+    if not metin:
+        return None
+    kalip_listesi = (
+        r"youtube\.com/embed/([A-Za-z0-9_-]{11})",
+        r"youtube\.com/watch\?v=([A-Za-z0-9_-]{11})",
+        r"youtu\.be/([A-Za-z0-9_-]{11})",
+        r"youtube\.com/v/([A-Za-z0-9_-]{11})",
+    )
+    for k in kalip_listesi:
+        m = re.search(k, metin)
+        if m:
+            return m.group(1)
+    return None
+
+
 def ham_video_bul(s: requests.Session, slug: str) -> str | None:
     """Detay sayfası -> player (/vid/ply/...) -> m3u8/mp4"""
     try:
@@ -269,7 +286,12 @@ def ham_video_bul(s: requests.Session, slug: str) -> str | None:
         oynaticilar = re.findall(
             r'data-hhs="([^"]+)"[^>]*?title="([^"]*)"', html
         ) or [(m, "") for m in re.findall(r'data-hhs="([^"]+)"', html)]
+
+        # YouTube embed dogrudan detail sayfasinda olabilir
+        yt_detail = youtube_id_bul(html)
         if not oynaticilar:
+            if yt_detail:
+                return "https://www.youtube.com/watch?v=" + yt_detail
             return None
 
         secili = None
@@ -285,6 +307,11 @@ def ham_video_bul(s: requests.Session, slug: str) -> str | None:
         if not secili:
             secili = oynaticilar[0][0]
 
+        # data-hhs dogrudan YouTube linki olabilir
+        yt_secili = youtube_id_bul(secili)
+        if yt_secili:
+            return "https://www.youtube.com/watch?v=" + yt_secili
+
         if secili.startswith("//"):
             player_url = "https:" + secili
         elif secili.startswith("/"):
@@ -298,6 +325,11 @@ def ham_video_bul(s: requests.Session, slug: str) -> str | None:
         if pr.status_code != 200:
             return None
         player_html = pr.text
+
+        # YouTube embed (Gonul Dagi, Taskacak eski bolumler vb.)
+        yt = youtube_id_bul(player_html)
+        if yt:
+            return "https://www.youtube.com/watch?v=" + yt
 
         kalip = (
             r"""sources\s*:\s*\[\s*\{\s*file\s*:\s*["']([^"']+)["']""",
