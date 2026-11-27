@@ -29,7 +29,7 @@ BASE = "https://tvdiziler.tv"
 PLAYLIST = "tvdiziler.m3u8"
 # True -> "Yeni Bölümler | Dizi Adı" (eski davranış, dizi bazlı grup)
 # False -> tek "Yeni Bölümler" grubu (önerilen: player'ın "Yeni Bölümler" sekmesi dolar)
-GRUP_PER_DIZI = False
+GRUP_PER_DIZI = True
 GRUP_ADI = "Yeni Bölümler"
 
 # 1 AJAX sayfası = 36 bölüm. 3 sayfa ~ son 108 bölüm.
