@@ -31,7 +31,7 @@ jobs:
       - name: Calistir
         env:
           PYTHONIOENCODING: utf-8
-        run: python tvdiziler.py
+        run: python tvdiziler_bot.py
 
       - name: Degisiklik var mi?
         id: diff
